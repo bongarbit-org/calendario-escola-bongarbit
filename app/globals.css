@@ -1,0 +1,196 @@
+/* ==========================================================================
+   Calendário da Escola Bongarbit — linguagem visual do design.md
+   Papel envelhecido, tinta preta, cantos retos, filete, sombra sólida.
+   ========================================================================== */
+
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-3-Light.otf") format("opentype");font-weight:300;font-display:swap}
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-5-Regular.otf") format("opentype");font-weight:400;font-display:swap}
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-5-RegularIta.otf") format("opentype");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-6-SemiBold.otf") format("opentype");font-weight:600;font-display:swap}
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-7-Bold.otf") format("opentype");font-weight:700;font-display:swap}
+@font-face{font-family:"The Mix Mono";src:url("/fonts/TheMixMono-9-Black.otf") format("opentype");font-weight:900;font-display:swap}
+
+:root{
+  --preto-grafite:#161512;
+  --marrom-terra:#6b3c23;
+  --terracota-queimada:#b14826;
+  --ocre-cabaca:#d4752d;
+  --amarelo-ocre:#d0962d;
+  --verde-baoba:#31671f;
+  --azul-caixa-dagua:#376182;
+
+  --areia:#d3ad84;
+  --papel:#ead6bf;
+  --papel-claro:#f4e8da;
+  --papel-sombra:#dfc7ab;
+
+  --grafite-70:rgba(22,21,18,.7);
+  --grafite-45:rgba(22,21,18,.45);
+  --grafite-18:rgba(22,21,18,.18);
+  --grafite-08:rgba(22,21,18,.08);
+
+  --surface-page:var(--papel);
+  --surface-card:var(--papel-claro);
+
+  --text-strong:var(--preto-grafite);
+  --text-body:var(--grafite-70);
+  --text-muted:var(--grafite-45);
+  --text-link:var(--terracota-queimada);
+  --text-link-hover:var(--ocre-cabaca);
+
+  --border-rule:var(--preto-grafite);
+  --border-hairline:var(--grafite-18);
+  --rule-hair:1px;
+  --rule-thick:3px;
+
+  --action-primary:var(--terracota-queimada);
+  --action-primary-hover:#993d20;
+  --focus-ring:var(--azul-caixa-dagua);
+
+  --font-core:"The Mix Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fw-regular:400; --fw-semibold:600; --fw-bold:700; --fw-black:900;
+  --fs-page-title:30px; --fs-h2:22px; --fs-h3:17px;
+  --fs-body:15px; --fs-small:13px; --fs-caption:12px; --fs-micro:11px;
+  --lh-heading:1.2; --lh-body:1.5; --lh-dense:1.35;
+  --ls-body:0.01em; --ls-eyebrow:0.18em;
+
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px;
+  --space-6:32px; --space-7:48px; --space-8:64px;
+  --content-max:900px;
+  --gutter:clamp(16px,4vw,40px);
+
+  --radius-none:0;
+  --shadow-print:3px 3px 0 var(--grafite-18);
+  --shadow-print-strong:5px 5px 0 var(--preto-grafite);
+
+  --ease-standard:cubic-bezier(.2,.6,.2,1);
+  --dur-fast:120ms;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  background:var(--surface-page);
+  color:var(--text-strong);
+  font-family:var(--font-core);
+  font-size:var(--fs-body);
+  line-height:var(--lh-body);
+  letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Grão de papel: ruído SVG leve, sem imagem pesada. */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1,h2,h3{margin:0;line-height:var(--lh-heading);font-weight:var(--fw-bold)}
+p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+a{color:var(--text-link);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{color:var(--text-link-hover)}
+::selection{background:var(--amarelo-ocre);color:var(--preto-grafite)}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+.pagina{position:relative;z-index:1;max-width:var(--content-max);margin:0 auto;
+  padding:var(--space-7) var(--gutter) var(--space-8)}
+
+/* ---------- cabeçalho ---------- */
+
+.topo{border-bottom:var(--rule-thick) solid var(--border-rule);padding-bottom:var(--space-4)}
+.olho{font-size:var(--fs-micro);font-weight:var(--fw-semibold);letter-spacing:var(--ls-eyebrow);
+  text-transform:uppercase;color:var(--text-link)}
+.topo__titulo{font-size:var(--fs-page-title);font-weight:var(--fw-black);letter-spacing:-0.015em;
+  margin-top:var(--space-2)}
+.topo__nota{font-size:var(--fs-small);color:var(--text-body);margin-top:var(--space-3);max-width:60ch}
+
+/* ---------- próxima aula ---------- */
+
+.proxima{background:var(--surface-card);border:var(--rule-hair) solid var(--border-rule);
+  border-top:var(--rule-thick) solid var(--terracota-queimada);
+  box-shadow:var(--shadow-print-strong);padding:var(--space-5);margin-top:var(--space-6);
+  display:flex;gap:var(--space-5);align-items:flex-start;flex-wrap:wrap}
+.proxima__data{flex:0 0 auto;text-align:center;border:var(--rule-hair) solid var(--border-rule);
+  background:var(--papel);padding:var(--space-3) var(--space-4);min-width:88px}
+.proxima__dia{font-size:40px;font-weight:var(--fw-black);line-height:1;letter-spacing:-0.02em}
+.proxima__mes{font-size:var(--fs-micro);letter-spacing:var(--ls-eyebrow);text-transform:uppercase;
+  color:var(--text-muted);margin-top:var(--space-2)}
+.proxima__corpo{flex:1 1 300px;min-width:0}
+.proxima__titulo{font-size:var(--fs-h2);font-weight:var(--fw-bold);margin:var(--space-2) 0}
+
+/* ---------- filtros ---------- */
+
+.filtros{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-6)}
+.botao{display:inline-flex;align-items:center;gap:var(--space-2);font:inherit;
+  font-size:var(--fs-micro);font-weight:var(--fw-semibold);letter-spacing:var(--ls-eyebrow);
+  text-transform:uppercase;padding:8px 14px;border:var(--rule-hair) solid var(--border-rule);
+  border-radius:var(--radius-none);background:var(--action-primary);color:var(--papel);
+  box-shadow:var(--shadow-print);cursor:pointer;text-decoration:none;
+  transition:background var(--dur-fast) var(--ease-standard),transform var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard)}
+.botao:hover{background:var(--action-primary-hover);color:var(--papel)}
+.botao:active{transform:translate(2px,2px);box-shadow:none}
+.botao--fantasma{background:transparent;box-shadow:none;border-color:var(--border-hairline);color:var(--text-body)}
+.botao--fantasma:hover{background:var(--grafite-08);color:var(--text-strong)}
+.botao__marca{width:9px;height:9px;border:var(--rule-hair) solid var(--border-rule);flex:0 0 auto}
+
+/* ---------- mês e aulas ---------- */
+
+.mes{margin-top:var(--space-7)}
+.mes__titulo{font-size:var(--fs-micro);font-weight:var(--fw-semibold);letter-spacing:var(--ls-eyebrow);
+  text-transform:uppercase;border-bottom:var(--rule-hair) solid var(--border-rule);
+  padding-bottom:var(--space-2);display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-3)}
+.mes__titulo span{font-weight:var(--fw-regular);letter-spacing:0;text-transform:none;
+  color:var(--text-muted);font-size:var(--fs-caption)}
+
+.aula{display:grid;grid-template-columns:62px 12px 1fr auto;gap:var(--space-3) var(--space-4);
+  align-items:start;padding:var(--space-4) var(--space-2);
+  border-bottom:var(--rule-hair) solid var(--border-hairline);line-height:var(--lh-dense);
+  transition:background var(--dur-fast) var(--ease-standard)}
+.aula:hover{background:var(--grafite-08)}
+.aula--passada{opacity:.45}
+.aula--hoje{background:var(--papel-claro);box-shadow:inset var(--rule-thick) 0 0 var(--terracota-queimada)}
+.aula--sem-aula .aula__titulo{color:var(--text-muted);font-weight:var(--fw-regular)}
+
+.aula__quando{text-align:right}
+.aula__numero{font-size:22px;font-weight:var(--fw-bold);line-height:1;font-variant-numeric:tabular-nums}
+.aula__semana{font-size:var(--fs-micro);letter-spacing:var(--ls-eyebrow);text-transform:uppercase;
+  color:var(--text-muted);display:block;margin-top:3px}
+.aula__faixa{width:12px;align-self:stretch;border:var(--rule-hair) solid var(--border-rule);min-height:34px}
+.aula__corpo{min-width:0}
+.aula__titulo{font-size:var(--fs-body);font-weight:var(--fw-semibold)}
+.aula__topico{font-size:var(--fs-small);color:var(--text-strong);margin-top:3px}
+.aula__descricao{font-size:var(--fs-small);color:var(--text-body);margin-top:var(--space-2);max-width:62ch}
+.aula__objetivo{font-size:var(--fs-caption);color:var(--text-muted);margin-top:var(--space-2);max-width:62ch}
+.aula__equipe{font-size:var(--fs-caption);color:var(--text-muted);margin-top:var(--space-2)}
+.aula__rotulo{letter-spacing:var(--ls-eyebrow);text-transform:uppercase;font-size:var(--fs-micro)}
+.aula__meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.etiqueta{display:inline-block;padding:3px 9px;font-size:var(--fs-micro);font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-eyebrow);text-transform:uppercase;border:var(--rule-hair) solid var(--border-rule);
+  border-radius:var(--radius-none);color:var(--papel);white-space:nowrap;line-height:1.4}
+.aula__detalhe{font-size:var(--fs-caption);color:var(--text-muted);white-space:nowrap}
+
+/* ---------- rodapé ---------- */
+
+.rodape{margin-top:var(--space-8);padding-top:var(--space-4);
+  border-top:var(--rule-hair) solid var(--border-hairline);
+  font-size:var(--fs-caption);color:var(--text-muted);line-height:1.7}
+
+@media (max-width:640px){
+  .aula{grid-template-columns:48px 8px 1fr;gap:var(--space-2) var(--space-3);padding:var(--space-3) 0}
+  .aula__numero{font-size:19px}
+  .aula__equipe{font-size:var(--fs-caption);color:var(--text-muted);margin-top:var(--space-2)}
+.aula__rotulo{letter-spacing:var(--ls-eyebrow);text-transform:uppercase;font-size:var(--fs-micro)}
+.aula__meta{grid-column:3;align-items:flex-start;text-align:left;flex-direction:row;
+    flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)}
+  .proxima{gap:var(--space-4)}
+}
+
+@media print{
+  body::before{display:none}
+  .filtros,.proxima{display:none}
+  .aula{break-inside:avoid}
+}
