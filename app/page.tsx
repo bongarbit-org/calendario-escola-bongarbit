@@ -5,6 +5,13 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// A agenda pública "Bongarbit - Escola de Luteria - Alunos", no Google Calendar.
+const ID_AGENDA =
+  "b066261daf2a5e9b5a30c0e7765f8e851572c5c5b31382976ae761f88e42bd1c@group.calendar.google.com";
+const AGENDA_GOOGLE = `https://calendar.google.com/calendar/u/0?cid=${Buffer.from(ID_AGENDA).toString("base64")}`;
+// iPhone, Outlook e qualquer outro leitor de .ics assinam por aqui.
+const AGENDA_ICS = `https://calendar.google.com/calendar/ical/${encodeURIComponent(ID_AGENDA)}/public/basic.ics`;
+
 export default function Pagina() {
   const h = hoje();
   const proxima = proximaAula();
@@ -18,8 +25,13 @@ export default function Pagina() {
         <div className="olho">Escola Bongarbit</div>
         <h1 className="topo__titulo">Calendário de aulas</h1>
         <p className="topo__nota">
-          Os encontros da escola de luteria, de setembro em diante. As aulas acontecem
-          no CACGB, às segundas e quartas; os Cafés com Bongarbit, aos sábados.
+          Os encontros da escola de luteria, de setembro em diante. As aulas de luteria,
+          orgânica e digital, são no <strong>CACGB</strong>, às segundas e quartas. Em
+          outubro não há luteria: o mês é da Trilha Empreendedora, que se divide entre as{" "}
+          <strong>quartas no CACGB</strong> (7 e 21) e as{" "}
+          <strong>sextas no Fab Lab Rec</strong> (16 e 30) — endereço diferente, fique
+          atento. Os Cafés com Bongarbit acontecem aos sábados, na Cabaça do CACGB —
+          menos o de novembro, que é na Aldeia Povo Marikito, em Escada.
         </p>
       </header>
 
@@ -44,6 +56,20 @@ export default function Pagina() {
           </div>
         </section>
       )}
+
+      <section className="assinar">
+        <p className="assinar__texto">
+          <strong>Leve o calendário no celular.</strong> Assine a agenda da escola e as aulas
+          aparecem sozinhas no seu telefone, com lembrete e tudo — se uma data mudar, muda lá
+          também.
+        </p>
+        <a className="botao" href={AGENDA_GOOGLE} target="_blank" rel="noreferrer">
+          Adicionar ao Google Agenda
+        </a>
+        <a className="botao botao--fantasma" href={AGENDA_ICS} target="_blank" rel="noreferrer">
+          Outro app (.ics)
+        </a>
+      </section>
 
       <Calendario hoje={h} />
 

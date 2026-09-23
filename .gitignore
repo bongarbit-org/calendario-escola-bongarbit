@@ -6,3 +6,11 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 .DS_Store
 *.xlsx
+.vercel
+.env*
+
+# Credenciais do Google. Nunca versionar: o repositório é público na origem
+# e sobe inteiro para a Vercel.
+token.json
+credentials.json
+client_secret*.json

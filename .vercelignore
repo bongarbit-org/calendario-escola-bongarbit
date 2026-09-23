@@ -1,0 +1,8 @@
+node_modules
+.next
+assets
+*.xlsx
+token.json
+credentials.json
+client_secret*.json
+scripts

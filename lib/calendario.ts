@@ -11,7 +11,6 @@ export type Aula = {
   horas: number | null;
   local: string | null;
   equipe: string | null;
-  objetivo: string | null;
   modulo: string | null;
   semAula: boolean;
 };
