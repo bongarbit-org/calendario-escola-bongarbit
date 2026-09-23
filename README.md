@@ -200,16 +200,75 @@ Café (5).
 
 ```sh
 # simulação, não grava nada
-python3 scripts/sincronizar_agenda.py --token ~/caminho/token.json
+python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json
 
 # aplicar
-python3 scripts/sincronizar_agenda.py --token ~/caminho/token.json --aplicar
+python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json --aplicar
 ```
 
-O token precisa do escopo `https://www.googleapis.com/auth/calendar`; sem um,
-passe `--credenciais` com o client secret e o script abre o navegador uma vez.
-**Nem o token nem o client secret podem morar neste repositório** — ele vai
-inteiro para a Vercel.
+**Nem o token nem o client secret podem morar neste repositório** — ele é
+público e vai inteiro para a Vercel. Guarde-os fora, como em
+`~/.config/bongarbit/`.
+
+### Usar com outra agenda e outras credenciais
+
+Nada de agenda está preso ao código: o ID entra por `--agenda` e a credencial
+por `--token` ou `--credenciais`. Quem clonar este repositório para outra escola
+faz assim.
+
+**1. Ative a API do Calendar.** No [Google Cloud
+Console](https://console.cloud.google.com/), crie um projeto (ou escolha um) e
+ative a **Google Calendar API** em *APIs e serviços > Biblioteca*.
+
+**2. Crie a credencial.** Em *APIs e serviços > Credenciais*, clique em *Criar
+credenciais > ID do cliente OAuth* e escolha o tipo **App para computador**.
+Baixe o JSON — é o *client secret*. Guarde-o fora do repositório:
+
+```sh
+mkdir -p ~/.config/minha-escola
+mv ~/Downloads/client_secret_*.json ~/.config/minha-escola/credenciais.json
+```
+
+Se a tela de consentimento pedir configuração, marque o app como **Externo** e
+adicione seu e-mail em *Usuários de teste* — não é preciso publicar o app nem
+passar por verificação para uso próprio.
+
+**3. Descubra o ID da agenda.** No Google Agenda, abra *Configurações da
+agenda > Integrar agenda* e copie o **ID da agenda**. Numa agenda de grupo ele
+tem a forma `…@group.calendar.google.com`; na agenda pessoal, é o seu e-mail.
+
+**4. Autorize uma vez.** O script abre o navegador e grava o token no caminho
+que você passar em `--token`:
+
+```sh
+python3 scripts/sincronizar_agenda.py \
+  --credenciais ~/.config/minha-escola/credenciais.json \
+  --token ~/.config/minha-escola/token.json \
+  --agenda SEU_ID@group.calendar.google.com
+```
+
+Nas vezes seguintes, só `--token` e `--agenda`: o token se renova sozinho
+enquanto o refresh token valer.
+
+**5. Confira antes de gravar.** Sem `--aplicar` o script só mostra o que faria.
+**Rode assim primeiro, sempre** — ele apaga eventos, e a conta precisa ter
+permissão de *Fazer alterações nos eventos* na agenda.
+
+```sh
+python3 scripts/sincronizar_agenda.py \
+  --token ~/.config/minha-escola/token.json \
+  --agenda SEU_ID@group.calendar.google.com
+
+# convencido? repita com --aplicar
+```
+
+**6. Ajuste o site.** O botão "Adicionar ao Google Agenda" monta o link a partir
+de `ID_AGENDA`, em `app/page.tsx`. Troque por lá — o `cid` e o `.ics` saem do
+mesmo ID, sem link colado à mão.
+
+Uma ressalva que vale para qualquer fork: `MUDANCAS`, `AJUSTES`, `FERIADOS` e as
+demais constantes descrevem **esta** escola. Esvazie-as antes de apontar o
+script para outra agenda, senão ele tentará mover datas que não existem.
 
 Duas notas sobre o pareamento, que é por data:
 

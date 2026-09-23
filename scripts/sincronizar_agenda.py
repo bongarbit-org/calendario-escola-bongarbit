@@ -6,14 +6,18 @@ gerada da planilha antes das correções de professor, local e conteúdo, e por 
 diverge. Este script reconcilia as duas.
 
     # ver o que mudaria, sem tocar em nada
-    python3 scripts/sincronizar_agenda.py --token ~/caminho/token.json
+    python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json
 
     # aplicar
-    python3 scripts/sincronizar_agenda.py --token ~/caminho/token.json --aplicar
+    python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json --aplicar
 
 O token precisa do escopo https://www.googleapis.com/auth/calendar. Sem token,
-passe --credenciais com o client secret e o script abre o navegador uma vez.
-Nenhum desses arquivos mora neste repositório — ele vai para a Vercel.
+passe --credenciais com o client secret e o script abre o navegador uma vez,
+gravando o token no caminho de --token. Nenhum desses arquivos mora neste
+repositório — ele é público e vai para a Vercel.
+
+Para outra agenda, passe --agenda com o ID dela (Configurações da agenda no
+Google > Integrar agenda > ID da agenda). Ver o README.
 
 A agenda mostra só os dias em que há aula: os eventos que no site são "não
 haverá aula" são apagados.
@@ -38,6 +42,7 @@ from googleapiclient.discovery import build
 
 ESCOPOS = ["https://www.googleapis.com/auth/calendar"]
 
+# A agenda desta escola. Outra agenda entra por --agenda, sem tocar no código.
 AGENDA = (
     "b066261daf2a5e9b5a30c0e7765f8e851572c5c5b31382976ae761f88e42bd1c"
     "@group.calendar.google.com"
@@ -150,6 +155,7 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--token", help="token.json com escopo de calendário")
     p.add_argument("--credenciais", help="client secret, para autorizar da primeira vez")
+    p.add_argument("--agenda", default=AGENDA, help="ID da agenda; o padrão é a da escola")
     p.add_argument("--aplicar", action="store_true", help="grava; sem isso é só simulação")
     args = p.parse_args()
 
@@ -180,7 +186,7 @@ def main() -> int:
         r = (
             api.events()
             .list(
-                calendarId=AGENDA,
+                calendarId=args.agenda,
                 timeMin=f"{COMECO}T00:00:00Z",
                 singleEvents=True,
                 maxResults=2500,
@@ -215,7 +221,7 @@ def main() -> int:
             apagados += 1
             print(f"  - {data}  {titulo[:46]}  — dia sem aula, apagado da agenda")
             if args.aplicar:
-                api.events().delete(calendarId=AGENDA, eventId=ev["id"]).execute()
+                api.events().delete(calendarId=args.agenda, eventId=ev["id"]).execute()
             continue
 
         corpo, notas = {}, []
@@ -240,7 +246,7 @@ def main() -> int:
         for n in notas:
             print(f"      {n}")
         if args.aplicar:
-            api.events().patch(calendarId=AGENDA, eventId=ev["id"], body=corpo).execute()
+            api.events().patch(calendarId=args.agenda, eventId=ev["id"], body=corpo).execute()
 
     faltando = sorted(d for d in set(site) - pareados if not site[d]["semAula"])
     if faltando:
