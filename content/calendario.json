@@ -200,7 +200,7 @@
           "semAula": false
         },
         {
-          "descricao": "Coleta e reconhecimento dos materiais do Berimbau",
+          "descricao": null,
           "topico": null,
           "trilha": "Luteria Orgânica",
           "cor": "var(--verde-baoba)",

@@ -97,7 +97,6 @@ ACRESCENTAR = [
         "data": "2026-10-10",
         "diaDaSemana": "Sáb",
         "titulo": "Vivência na Mata",
-        "descricao": "Coleta e reconhecimento dos materiais do Berimbau",
         "trilha": "Luteria Orgânica",
         "horas": 9.0,
         "local": "Camaragibe Velho",
