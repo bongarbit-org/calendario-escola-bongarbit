@@ -82,20 +82,39 @@ AJUSTES = {
     "2026-10-28": {"data": "2026-10-30", "diaDaSemana": "Sex", "local": "Fab Lab Rec"},
 }
 
-# Entradas que a planilha não tem. As quartas 14 e 28/10 ficaram vazias quando a
-# Trilha Empreendedora mudou para sexta, e o aluno precisa ver isso escrito.
+# Entradas que a planilha não traz utilizáveis. Cada uma declara só o que a
+# distingue; o resto vem dos padrões de acrescentada(), que assume dia sem aula.
 ACRESCENTAR = [
+    # As quartas que ficaram vazias quando a Trilha Empreendedora passou para
+    # sexta — o aluno precisa ver isso escrito.
     {"data": "2026-10-14", "diaDaSemana": "Qua"},
     {"data": "2026-10-28", "diaDaSemana": "Qua"},
+    # A Vivência na Mata está na planilha sem data utilizável ("Mata a Definir",
+    # numa data já vencida) e por isso continua em EXCLUIR. Entra por aqui, com
+    # a data e o local confirmados pela coordenação. Se a planilha for corrigida
+    # na origem, tire-a de EXCLUIR e apague esta entrada — senão, duplica.
+    {
+        "data": "2026-10-10",
+        "diaDaSemana": "Sáb",
+        "titulo": "Vivência na Mata",
+        "descricao": "Coleta e reconhecimento dos materiais do Berimbau",
+        "trilha": "Luteria Orgânica",
+        "horas": 9.0,
+        "local": "Camaragibe Velho",
+        "equipe": "prof. Ninho Brown Xambá",
+        "modulo": "Módulo 1",
+    },
 ]
 
 
-def dia_sem_aula(base: dict) -> dict:
+def acrescentada(base: dict) -> dict:
+    """Completa uma entrada de ACRESCENTAR. Sem trilha declarada, é dia sem aula."""
+    trilha = base.get("trilha", "Sem aula")
     return {
-        "descricao": None, "topico": None, "trilha": "Sem aula",
-        "cor": CORES["Sem aula"], "horas": None, "local": "CACGB",
-        "equipe": None, "modulo": "Módulo 2", "semAula": True,
-        "titulo": "Não haverá aula", **base,
+        "descricao": None, "topico": None, "trilha": trilha,
+        "cor": CORES.get(trilha, CORES["Sem aula"]), "horas": None,
+        "local": "CACGB", "equipe": None, "modulo": "Módulo 2",
+        "semAula": trilha == "Sem aula", "titulo": "Não haverá aula", **base,
     }
 
 # O texto que a planilha traz para a Trilha Empreendedora é copiado das aulas de
@@ -219,7 +238,7 @@ def main() -> int:
 
     for i in itens:
         i.update(AJUSTES.get(i["data"], {}))
-    itens += [dia_sem_aula(b) for b in ACRESCENTAR]
+    itens += [acrescentada(b) for b in ACRESCENTAR]
     ocupadas = {i["data"] for i in itens}
     itens += [feriado(d, n) for d, n in FERIADOS.items()
               if d >= COMECO.date().isoformat() and d not in ocupadas]

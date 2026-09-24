@@ -148,6 +148,15 @@ Rode a simulação de novo depois de aplicar: tem que dar `0 eventos a atualizar
 O script apaga eventos — os dias sem aula saem da agenda, que lista só o que tem
 aula. Nunca rode `--aplicar` sem antes mostrar a simulação ao usuário.
 
+Criar é opt-in: `--criar` cria na agenda os eventos que existem no site e faltam
+lá, e só para as datas com horário declarado em `HORARIOS`. O site guarda data e
+carga horária, não hora do dia — sem horário declarado, o script recusa a criação
+em vez de inventar hora.
+
+As bibliotecas do Google (`google-api-python-client`, `google-auth-oauthlib`) e o
+`openpyxl` precisam estar no interpretador que você usar. Confira antes de
+concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
+
 ## 7. Fluxo completo de uma alteração
 
 1. `git pull`

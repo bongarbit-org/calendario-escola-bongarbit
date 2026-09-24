@@ -32,7 +32,8 @@ baixado é reproduzível e não depende de credencial para rodar.
 python3 scripts/importar.py caminho/para/cronograma.xlsx
 ```
 
-Requer `openpyxl` (`pip install openpyxl`).
+Requer `openpyxl` (`pip install openpyxl`). O sincronizador da agenda pede
+`google-api-python-client` e `google-auth-oauthlib`.
 
 ### O que a planilha precisa ter
 
@@ -134,7 +135,9 @@ Feito para o celular primeiro: é onde o aluno consulta.
 `scripts/sincronizar_agenda.py` põe uma agenda do Google de acordo com o
 `calendario.json`. O site é a fonte; a agenda o acompanha.
 
-O script **corrige e apaga eventos que já existem, e nunca cria**. Ele mexe em
+O script **corrige e apaga eventos que já existem**, e só cria com `--criar`,
+para datas com horário declarado em `HORARIOS` — o site guarda data e carga
+horária, não hora do dia, e o script não inventa hora. Ele mexe em
 título, local e nas linhas da descrição que conhece, preservando qualquer outra
 linha que esteja lá. Horário e duração ficam como estão, salvo mudança de data
 declarada explicitamente em `MUDANCAS`.

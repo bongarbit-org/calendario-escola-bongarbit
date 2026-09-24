@@ -200,6 +200,20 @@
           "semAula": false
         },
         {
+          "descricao": "Coleta e reconhecimento dos materiais do Berimbau",
+          "topico": null,
+          "trilha": "Luteria Orgânica",
+          "cor": "var(--verde-baoba)",
+          "horas": 9.0,
+          "local": "Camaragibe Velho",
+          "equipe": "prof. Ninho Brown Xambá",
+          "modulo": "Módulo 1",
+          "semAula": false,
+          "titulo": "Vivência na Mata",
+          "data": "2026-10-10",
+          "diaDaSemana": "Sáb"
+        },
+        {
           "data": "2026-10-12",
           "diaDaSemana": "Seg",
           "titulo": "Nossa Senhora Aparecida",

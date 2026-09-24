@@ -22,8 +22,12 @@ Google > Integrar agenda > ID da agenda). Ver o README.
 A agenda mostra só os dias em que há aula: os eventos que no site são "não
 haverá aula" são apagados.
 
+Criar um evento é opt-in: --criar cria os que existem no site e faltam na
+agenda, e só para as datas com horário declarado em HORARIOS — o site guarda
+data e carga horária, não hora do dia, e o script não inventa hora.
+
 O que o script NÃO faz, de propósito:
-  · não cria eventos — só corrige e apaga os que já existem
+  · não cria nada sem --criar, e nunca sem horário declarado
   · não mexe em horário nem em duração, com uma exceção anotada em MUDANCAS
   · não toca em nada antes de COMECO
 """
@@ -67,6 +71,13 @@ MUDANCAS = {
     # A Trilha Empreendedora saiu das quartas para as sextas, no Fab Lab Rec.
     ("2026-10-14", "encontro da trilha de educacao empreendedora 4"): "2026-10-16",
     ("2026-10-28", "encontro da trilha de educacao empreendedora 6"): "2026-10-30",
+}
+
+# O site guarda data e carga horária, não hora do dia. Um evento criado do zero
+# precisa de hora, e ela é declarada aqui por data, em UTC — Recife é UTC-3.
+HORARIOS = {
+    # Vivência na Mata: 8h às 17h em Recife.
+    "2026-10-10": ("11:00", "20:00"),
 }
 
 # As linhas da descrição que este script governa. O resto é preservado.
@@ -156,6 +167,8 @@ def main() -> int:
     p.add_argument("--token", help="token.json com escopo de calendário")
     p.add_argument("--credenciais", help="client secret, para autorizar da primeira vez")
     p.add_argument("--agenda", default=AGENDA, help="ID da agenda; o padrão é a da escola")
+    p.add_argument("--criar", action="store_true",
+                   help="cria os eventos do site que faltam na agenda")
     p.add_argument("--aplicar", action="store_true", help="grava; sem isso é só simulação")
     args = p.parse_args()
 
@@ -249,16 +262,37 @@ def main() -> int:
             api.events().patch(calendarId=args.agenda, eventId=ev["id"], body=corpo).execute()
 
     faltando = sorted(d for d in set(site) - pareados if not site[d]["semAula"])
+    criados = 0
     if faltando:
         print(f"\n  no site e não na agenda ({len(faltando)}):")
         for d in faltando:
-            print(f"    {d}  {site[d]['titulo'][:56]}")
+            item = site[d]
+            if not args.criar:
+                print(f"    {d}  {item['titulo'][:56]}")
+                continue
+            if d not in HORARIOS:
+                print(f"    {d}  {item['titulo'][:40]}  — sem horário em HORARIOS,"
+                      f" não criado")
+                continue
+            ini, fim = HORARIOS[d]
+            print(f"    + {d}  {item['titulo'][:40]}  {ini}–{fim} UTC")
+            criados += 1
+            if args.aplicar:
+                api.events().insert(calendarId=args.agenda, body={
+                    "summary": item["titulo"],
+                    "location": item["local"] or "",
+                    "description": descricao_nova("", item),
+                    "start": {"dateTime": f"{d}T{ini}:00Z", "timeZone": "UTC"},
+                    "end": {"dateTime": f"{d}T{fim}:00Z", "timeZone": "UTC"},
+                }).execute()
 
     print(f"\n{mudados} eventos {'atualizados' if args.aplicar else 'a atualizar'}"
           f"{f', {apagados} a apagar' if apagados and not args.aplicar else ''}"
           f"{f', {apagados} apagados' if apagados and args.aplicar else ''}"
+          f"{f', {criados} criados' if criados and args.aplicar else ''}"
+          f"{f', {criados} a criar' if criados and not args.aplicar else ''}"
           f"{f', {sem_par} sem par' if sem_par else ''}")
-    if not args.aplicar and (mudados or apagados):
+    if not args.aplicar and (mudados or apagados or criados):
         print("Simulação. Repita com --aplicar para gravar.")
     return 0
 
