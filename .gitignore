@@ -14,3 +14,4 @@ tsconfig.tsbuildinfo
 token.json
 credentials.json
 client_secret*.json
+.claude/scheduled_tasks.lock

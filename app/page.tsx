@@ -1,4 +1,5 @@
 import { Calendario } from "@/components/Calendario";
+import { CardDoDia } from "@/components/CardDoDia";
 import {
   calendario, dia, emPalavras, hoje, horasDe, mesCurto, proximaAula, quantosDias, todasAsAulas,
 } from "@/lib/calendario";
@@ -53,6 +54,11 @@ export default function Pagina() {
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+            {proxima.data === h && (proxima.diaDaSemana === "Seg" || proxima.diaDaSemana === "Qua") && (
+              <div style={{ marginTop: "var(--space-3)" }}>
+                <CardDoDia aula={proxima} />
+              </div>
+            )}
           </div>
         </section>
       )}
