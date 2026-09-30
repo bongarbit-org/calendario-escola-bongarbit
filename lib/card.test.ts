@@ -153,6 +153,15 @@ describe("linha3Variantes", () => {
       expect(v).not.toContain(", com **");
     }
   });
+  it("nunca menciona 'hoje' — quem já diz isso é a linha2Variantes", () => {
+    const variantes = [
+      ...linha3Variantes(aula({})),
+      ...linha3Variantes(aula({ titulo: "Vivência na Mata", equipe: null })),
+    ];
+    for (const v of variantes) {
+      expect(v.toLowerCase()).not.toContain("hoje");
+    }
+  });
 });
 
 describe("linha4Variantes", () => {

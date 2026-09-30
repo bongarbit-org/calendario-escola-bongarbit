@@ -96,13 +96,18 @@ export function linha2Variantes(sede: Sede, horario: string): string[] {
     `Passando para lembrar: aula **hoje** no **${nome}**, das **${horario}**.`,
     `Hoje a turma se reúne no **${nome}**, das **${horario}**.`,
     `Esperamos vocês **hoje** no **${nome}**, das **${horario}**.`,
+    `Contamos com vocês **hoje** no **${nome}**, das **${horario}**.`,
+    `**Hoje**, aula no **${nome}**, das **${horario}**.`,
+    `Confirmando: aula **hoje** no **${nome}**, das **${horario}**.`,
+    `Hoje o encontro é no **${nome}**, das **${horario}**.`,
   ];
 }
 
 /**
- * Formas de anunciar a aula em si. Quando o título segue o padrão de luteria
- * ("Luteria do/da X - Aula N"), usa a forma ordinal ("a terceira aula de Berimbau");
- * senão cai no título sem o sufixo de aula, como assunto.
+ * Formas de anunciar a aula em si — sem mencionar "hoje", que já está coberto
+ * pela linha anterior (linha2Variantes). Quando o título segue o padrão de
+ * luteria ("Luteria do/da X - Aula N"), usa a forma ordinal ("a terceira aula
+ * de Berimbau"); senão cai no título sem o sufixo de aula, como assunto.
  */
 export function linha3Variantes(aula: Aula): string[] {
   const quem = stripPrefixoProf(aula.equipe);
@@ -113,23 +118,30 @@ export function linha3Variantes(aula: Aula): string[] {
     const ordinal = ordinalPT(extrairNumeroDaAula(aula.titulo)!);
     return [
       `É a **${ordinal} aula de ${instrumento}**${comQuem}.`,
-      `Hoje é a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Chegou a **${ordinal} aula de ${instrumento}**${comQuem}.`,
       `Seguimos com a **${ordinal} aula de ${instrumento}**${comQuem}.`,
-      `Hoje temos a **${ordinal} aula de ${instrumento}**${comQuem}.`,
-      `O encontro de hoje é a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Temos a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `O encontro é a **${ordinal} aula de ${instrumento}**${comQuem}.`,
       `Vamos para a **${ordinal} aula de ${instrumento}**${comQuem}.`,
-      `No programa de hoje, a **${ordinal} aula de ${instrumento}**${comQuem}.`,
-      `Na pauta de hoje, a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `No programa, a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Na pauta, a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `É dia da **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Nosso encontro é a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Preparados para a **${ordinal} aula de ${instrumento}**${comQuem}.`,
+      `Já estamos na **${ordinal} aula de ${instrumento}**${comQuem}.`,
     ];
   }
 
   const assunto = tituloSemSufixoAula(aula.titulo);
   return [
     `É **${assunto}**${comQuem}.`,
-    `Hoje é **${assunto}**${comQuem}.`,
-    `Nosso encontro de hoje: **${assunto}**${comQuem}.`,
-    `Hoje temos **${assunto}**${comQuem}.`,
-    `Na pauta de hoje, **${assunto}**${comQuem}.`,
+    `Chegou a vez de **${assunto}**${comQuem}.`,
+    `Nosso encontro: **${assunto}**${comQuem}.`,
+    `Temos **${assunto}**${comQuem}.`,
+    `Na pauta, **${assunto}**${comQuem}.`,
+    `É dia de **${assunto}**${comQuem}.`,
+    `Vamos ter **${assunto}**${comQuem}.`,
+    `No programa, **${assunto}**${comQuem}.`,
   ];
 }
 
@@ -143,6 +155,10 @@ export function linha4Variantes(): string[] {
     "Nos vemos lá!",
     "Vamos juntos!",
     "Até mais tarde!",
+    "Até breve!",
+    "Um abraço a todos!",
+    "Vamos com tudo!",
+    "Até mais!",
   ];
 }
 
