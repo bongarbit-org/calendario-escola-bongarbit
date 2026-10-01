@@ -80,9 +80,6 @@ export default function Pagina() {
           {pelaFrente.length} encontros pela frente, {horas.toFixed(0)}h de formação.
           Calendário sujeito a mudanças — confirme com a equipe da escola.
         </p>
-        <p style={{ marginTop: "var(--space-2)" }}>
-          A Vivência na Mata ainda não tem data definida e por isso não aparece aqui.
-        </p>
       </footer>
     </main>
   );

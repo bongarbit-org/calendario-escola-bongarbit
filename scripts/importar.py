@@ -6,8 +6,9 @@ O .xlsx é a fonte: baixe a planilha do Drive e aponte o caminho.
     python3 scripts/importar.py ~/Downloads/CRONOGRAMA\\ PEDAGÓGICO.xlsx
 
 O que fica de fora, de propósito:
-  · Vivência na Mata — a data ainda não foi definida
-  · Circulação       — não diz respeito aos alunos da escola
+  · Circulação — não diz respeito aos alunos da escola
+  · Vivência na Mata, como vem da planilha — a linha de lá tem data vencida e
+    local "a definir"; a data confirmada entra por ACRESCENTAR
   · Pagamentos e dados pessoais dos educadores — nunca saem da planilha
 """
 
