@@ -33,6 +33,24 @@ const DATA_COM_AULA = acharData((a) => (a.diaDaSemana === "Seg" || a.diaDaSemana
 // regra extra de !semAula no gate do botão).
 const DATA_FERIADO_SEG_QUA = acharData((a) => (a.diaDaSemana === "Seg" || a.diaDaSemana === "Qua") && a.semAula);
 
+/**
+ * Clica pelo texto, de dentro da página. O `.click()` do Puppeteer mira em
+ * coordenadas, e aqui o modal muda de altura quando o PNG recapturado entra no
+ * lugar do anterior — entre calcular o ponto e clicar, o botão já saiu dali e o
+ * clique cai no vazio. Chamar `.click()` no próprio elemento não tem esse risco.
+ */
+async function clicarPorTexto(page: Page, texto: string): Promise<void> {
+  const achou = await page.evaluate((t) => {
+    const btn = Array.from(document.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === t
+    ) as HTMLButtonElement | undefined;
+    if (!btn || btn.disabled) return false;
+    btn.click();
+    return true;
+  }, texto);
+  if (!achou) throw new Error(`Botão "${texto}" não encontrado ou desabilitado.`);
+}
+
 const PORTA_COM_AULA = 3911;
 const PORTA_FERIADO = 3912;
 
@@ -109,8 +127,7 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
       expect(src.length).toBeGreaterThan(5_000); // uma captura real não é um PNG de 4 bytes
 
       const linhaAntes = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
-      const gerarNovamente = await page.waitForSelector("xpath/.//button[normalize-space()='Gerar novamente']");
-      await gerarNovamente!.click();
+      await clicarPorTexto(page, "Gerar novamente");
       await page.waitForFunction(
         (textoAntigo) => {
           const el = document.querySelector("[class*='msg'] span:nth-of-type(2)");
@@ -137,13 +154,11 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
         { timeout: 40_000 }
       );
 
-      const mudarHorario = await page.waitForSelector("xpath/.//button[normalize-space()='Mudar horário']");
-      await mudarHorario!.click();
+      await clicarPorTexto(page, "Mudar horário");
       const campo = await page.waitForSelector("input[placeholder='Ex.: 8h às 12h']");
       await campo!.click({ count: 3 });
       await campo!.type("8h às 12h");
-      const aplicar = await page.waitForSelector("xpath/.//button[normalize-space()='Aplicar']");
-      await aplicar!.click();
+      await clicarPorTexto(page, "Aplicar");
 
       await page.waitForFunction(
         () => {
