@@ -137,6 +137,9 @@ a:hover{color:var(--text-link-hover)}
 .botao--fantasma{background:transparent;box-shadow:none;border-color:var(--border-hairline);color:var(--text-body)}
 .botao--fantasma:hover{background:var(--grafite-08);color:var(--text-strong)}
 .botao__marca{width:9px;height:9px;border:var(--rule-hair) solid var(--border-rule);flex:0 0 auto}
+.botao--mini{padding:4px 8px;gap:4px;box-shadow:2px 2px 0 var(--grafite-18)}
+.botao--mini:active{box-shadow:none}
+.botao--mini:disabled{opacity:.4;cursor:not-allowed}
 
 /* ---------- mês e aulas ---------- */
 

@@ -2,6 +2,30 @@
 
 Instruções para o Claude Code neste repositório.
 
+## Comandos
+
+```sh
+npm install                              # dependências do site
+npm run dev                              # site em localhost:3000
+npm run build                            # build de produção (rode antes de commitar mudança de UI)
+npm run test                             # testes unitários e de componente (vitest, rápido)
+npm run test:e2e                         # build + Chromium headless de verdade (puppeteer, mais lento)
+
+python3 scripts/importar.py cronograma.xlsx                              # planilha → calendario.json
+python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json               # simula a sincronização
+python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json --aplicar     # grava na agenda
+
+python3 -c "import googleapiclient, openpyxl"   # confirma que as libs Python estão instaladas
+```
+
+`npm run test` cobre funções puras (`lib/*.test.ts`) e renderização de componente
+(`components/*.test.tsx`, jsdom, sem browser de verdade). `npm run test:e2e`
+sobe o build de produção e dirige um Chromium headless real via Puppeteer —
+é o único jeito de testar coisas que dependem de um browser de verdade, como a
+rasterização de imagem do `@zumer/snapdom` (`e2e/*.e2e.test.ts`). `next dev`
+recusa rodar duas instâncias no mesmo projeto, então os testes e2e sobem
+`next start` numa porta separada, nunca `next dev`.
+
 ## 1. Sempre comece com `git pull`
 
 **Nenhuma leitura, análise ou alteração acontece antes disto.** O repositório é
@@ -47,7 +71,31 @@ nunca lê dela para dentro do site.
 Consequência prática: se alguém editar um evento direto no Google Agenda, a
 próxima sincronização desfaz a edição. Quando notar isso, avise antes de aplicar.
 
-## 4. Como o usuário pede mudanças
+## 4. Arquitetura do site
+
+Next.js (App Router) renderizado a cada requisição (`export const dynamic =
+"force-dynamic"` em [`app/page.tsx`](app/page.tsx)), para que "hoje" seja o
+hoje de quem abre a página, não o momento do build.
+
+- [`lib/calendario.ts`](lib/calendario.ts) importa `content/calendario.json`
+  direto (não via `fetch`) e expõe os tipos (`Aula`, `Mes`) e as funções
+  puras usadas pelo resto do site: `hoje()` calcula a data no fuso de Recife
+  porque o servidor roda em UTC; `proximaAula()`, `quantosDias()`,
+  `emPalavras()` e `horasDe()` formatam o que aparece na tela.
+- [`app/page.tsx`](app/page.tsx) é a página única do site: cabeçalho, destaque
+  do próximo encontro, botões de assinatura da agenda (`ID_AGENDA` está
+  hardcoded aqui — é o único lugar a mudar se a agenda pública trocar de ID)
+  e o rodapé com a contagem de encontros e horas.
+- [`components/Calendario.tsx`](components/Calendario.tsx) é o único client
+  component (`"use client"`): estado de filtro por trilha, alternância
+  lista/grade e mostrar/esconder aulas passadas. A grade de mês é montada à
+  mão (função `grade()`) a partir do primeiro domingo ao último sábado.
+
+Mudança visual segue [`design.md`](design.md) — papel envelhecido, tipografia
+mono, cantos retos, cor semântica por trilha. Leia antes de mexer em CSS ou em
+como uma informação é apresentada.
+
+## 5. Como o usuário pede mudanças
 
 Ele descreve a mudança em linguagem corrente — "as aulas de X são com o prof. Y",
 "o encontro de 14/10 passou para 16/10, no Fab Lab". Ele **não** edita a planilha
@@ -74,7 +122,7 @@ Qual constante usar:
 | feriado | `FERIADOS` |
 | classificação de trilha pelo nome | `TRILHAS` |
 
-## 5. Verificar diferenças entre o site e a agenda
+## 6. Verificar diferenças entre o site e a agenda
 
 A simulação do sincronizador **é** a ferramenta de comparação. Ela não grava
 nada:
@@ -133,7 +181,7 @@ novo sem diferença é eco; carimbo novo com diferença é edição humana.
 Quando a diferença vier de uma edição humana no Google, **pergunte qual vale**
 antes de aplicar — aplicar apagaria a edição.
 
-## 6. Sincronizar
+## 7. Sincronizar
 
 ```sh
 # simulação primeiro, sempre
@@ -157,7 +205,7 @@ As bibliotecas do Google (`google-api-python-client`, `google-auth-oauthlib`) e 
 `openpyxl` precisam estar no interpretador que você usar. Confira antes de
 concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
 
-## 7. Fluxo completo de uma alteração
+## 8. Fluxo completo de uma alteração
 
 1. `git pull`
 2. Editar a constante em `scripts/importar.py` **e** o `content/calendario.json`
@@ -168,14 +216,14 @@ concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
 7. Verificar no ar
 8. Sincronizar a agenda, com simulação antes
 
-## 8. Segredos
+## 9. Segredos
 
 O token do Google vive em `~/.config/bongarbit/token.json`, **fora do
 repositório**. Nunca o mova para cá, nunca o imprima, nunca o commite. O
 `.gitignore` barra `token.json`, `credentials.json` e `client_secret*.json`, mas
 a regra é não trazer esses arquivos para a pasta.
 
-## 9. Ao verificar, verifique de verdade
+## 10. Ao verificar, verifique de verdade
 
 Alterou o site? Confira o HTML que o servidor devolve, não o JSON de entrada.
 Alterou a agenda? Baixe o `.ics` de novo e confirme. Afirmar que algo funcionou

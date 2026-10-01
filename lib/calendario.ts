@@ -29,6 +29,9 @@ const FUSO = "America/Recife";
 
 /** Hoje no fuso de Recife — o servidor da Vercel roda em UTC. */
 export function hoje(): string {
+  // Só para os testes e2e: sem isto, "hoje" muda todo dia e o teste não tem como
+  // escolher uma data previsível. Nunca é lido a partir de requisição do navegador.
+  if (process.env.CALENDARIO_HOJE_TESTE) return process.env.CALENDARIO_HOJE_TESTE;
   const p = new Intl.DateTimeFormat("pt-BR", {
     timeZone: FUSO, year: "numeric", month: "2-digit", day: "2-digit",
   }).formatToParts(new Date());
