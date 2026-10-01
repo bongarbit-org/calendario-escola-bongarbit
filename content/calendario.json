@@ -174,16 +174,16 @@
         {
           "data": "2026-10-05",
           "diaDaSemana": "Seg",
-          "titulo": "Não haverá aula",
+          "titulo": "Luteria do Berimbau - Aula 4",
           "descricao": null,
           "topico": null,
-          "trilha": "Sem aula",
-          "cor": "var(--grafite-45)",
-          "horas": null,
+          "trilha": "Luteria Orgânica",
+          "cor": "var(--verde-baoba)",
+          "horas": 3.0,
           "local": "CACGB",
-          "equipe": "João, Thúlio, Educadores e Monitores",
+          "equipe": "prof. Ninho Brown Xambá",
           "modulo": "Módulo 2",
-          "semAula": true
+          "semAula": false
         },
         {
           "data": "2026-10-07",

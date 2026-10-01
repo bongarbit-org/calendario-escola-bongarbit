@@ -78,6 +78,8 @@ MUDANCAS = {
 HORARIOS = {
     # Vivência na Mata: 8h às 17h em Recife.
     "2026-10-10": ("11:00", "20:00"),
+    # Aula extra de Berimbau: 18h às 21h, o horário padrão das aulas.
+    "2026-10-05": ("21:00", "00:00"),
 }
 
 # As linhas da descrição que este script governa. O resto é preservado.
@@ -275,7 +277,13 @@ def main() -> int:
                       f" não criado")
                 continue
             ini, fim = HORARIOS[d]
-            print(f"    + {d}  {item['titulo'][:40]}  {ini}–{fim} UTC")
+            # Recife é UTC-3: uma aula das 18h às 21h vira 21:00Z–00:00Z, e o
+            # fim cai no dia seguinte. Sem isto o evento nasceria invertido.
+            fim_d = d if fim > ini else (
+                datetime.date.fromisoformat(d) + datetime.timedelta(days=1)
+            ).isoformat()
+            vira = " (+1d)" if fim_d != d else ""
+            print(f"    + {d}  {item['titulo'][:40]}  {ini}–{fim}{vira} UTC")
             criados += 1
             if args.aplicar:
                 api.events().insert(calendarId=args.agenda, body={
@@ -283,7 +291,7 @@ def main() -> int:
                     "location": item["local"] or "",
                     "description": descricao_nova("", item),
                     "start": {"dateTime": f"{d}T{ini}:00Z", "timeZone": "UTC"},
-                    "end": {"dateTime": f"{d}T{fim}:00Z", "timeZone": "UTC"},
+                    "end": {"dateTime": f"{fim_d}T{fim}:00Z", "timeZone": "UTC"},
                 }).execute()
 
     print(f"\n{mudados} eventos {'atualizados' if args.aplicar else 'a atualizar'}"

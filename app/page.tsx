@@ -26,12 +26,14 @@ export default function Pagina() {
         <h1 className="topo__titulo">Calendário de aulas</h1>
         <p className="topo__nota">
           Os encontros da escola de luteria, de setembro em diante. As aulas de luteria,
-          orgânica e digital, são no <strong>CACGB</strong>, às segundas e quartas. Em
-          outubro não há luteria: o mês é da Trilha Empreendedora, que se divide entre as{" "}
+          orgânica e digital, são no <strong>CACGB</strong>, às segundas e quartas.
+          Outubro é sobretudo da Trilha Empreendedora, que se divide entre as{" "}
           <strong>quartas no CACGB</strong> (7 e 21) e as{" "}
           <strong>sextas no Fab Lab Rec</strong> (16 e 30) — endereço diferente, fique
-          atento. Os Cafés com Bongarbit acontecem aos sábados, na Cabaça do CACGB —
-          menos o de novembro, que é na Aldeia Povo Marikito, em Escada.
+          atento. Fora isso, o mês tem a aula de Berimbau da segunda 5 e a{" "}
+          <strong>Vivência na Mata</strong>, no sábado 10, em Camaragibe Velho. Os Cafés
+          com Bongarbit acontecem aos sábados, na Cabaça do CACGB — menos o de novembro,
+          que é na Aldeia Povo Marikito, em Escada.
         </p>
       </header>
 

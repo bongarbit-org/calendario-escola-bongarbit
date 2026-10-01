@@ -74,6 +74,17 @@ AJUSTES = {
         "titulo": "Café com Bongarbit (5)",
         "local": "Aldeia Povo Marikito, Escada/PE",
     },
+    # Aula extra de Berimbau marcada depois que a planilha deu 05/10 como dia
+    # sem aula. Sobrescreve a linha inteira, inclusive semAula.
+    "2026-10-05": {
+        "titulo": "Luteria do Berimbau - Aula 4",
+        "trilha": "Luteria Orgânica",
+        "cor": "var(--verde-baoba)",
+        "horas": 3.0,
+        "local": "CACGB",
+        "equipe": "prof. Ninho Brown Xambá",
+        "semAula": False,
+    },
     # A Trilha Empreendedora se divide: quartas no CACGB, sextas no Fab Lab Rec.
     # Os dois encontros de sexta saíram das quartas 14 e 28/10 — ver ACRESCENTAR.
     "2026-10-07": {"local": "CACGB"},
