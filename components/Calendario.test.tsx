@@ -32,12 +32,26 @@ const FIXTURE = {
           horas: 3, local: "CACGB", equipe: "prof. Ninho Brown Xambá", modulo: "Módulo 2",
           semAula: false,
         },
-        // Hoje seria sexta neste cenário de teste — não deve mostrar o botão (regra seg/qua).
+        // Sexta fora do Fab Lab — não deve mostrar o botão.
         {
           data: "2026-10-02", diaDaSemana: "Sex", titulo: "Café com Bongarbit (4)",
           descricao: null, topico: null, trilha: "Encontro", cor: "#d4752d",
           horas: 2, local: "CACGB - Cabaça", equipe: "Equipe de produção e monitoria do Bongarbit",
           modulo: null, semAula: false,
+        },
+        // Sexta no Fab Lab Rec — a Trilha Empreendedora mudou para lá, deve mostrar.
+        {
+          data: "2026-10-16", diaDaSemana: "Sex",
+          titulo: "Encontro da Trilha de Educação Empreendedora (4)",
+          descricao: null, topico: null, trilha: "Trilha Empreendedora", cor: "#d0962d",
+          horas: 3, local: "Fab Lab Rec", equipe: "Equipe Fab Lab Rec",
+          modulo: "Módulo 2", semAula: false,
+        },
+        // Feriado numa segunda — semAula, nunca mostra.
+        {
+          data: "2026-10-12", diaDaSemana: "Seg", titulo: "Nossa Senhora Aparecida",
+          descricao: null, topico: null, trilha: "Feriado", cor: "#6b6b6b",
+          horas: null, local: null, equipe: null, modulo: null, semAula: true,
         },
       ],
     },
@@ -69,9 +83,26 @@ describe("botão Visualizar convite", () => {
     expect(within(outraLinha).queryByRole("button", { name: "Visualizar convite" })).not.toBeInTheDocument();
   });
 
-  it("não aparece quando hoje cai numa sexta", async () => {
+  it("não aparece numa sexta fora do Fab Lab", async () => {
     const Calendario = await importCalendario();
     render(<Calendario hoje="2026-10-02" />);
+
+    expect(screen.queryByRole("button", { name: "Visualizar convite" })).not.toBeInTheDocument();
+  });
+
+  it("aparece na sexta quando o encontro é no Fab Lab Rec", async () => {
+    const Calendario = await importCalendario();
+    render(<Calendario hoje="2026-10-16" />);
+
+    const linha = screen
+      .getByText("Encontro da Trilha de Educação Empreendedora (4)")
+      .closest("li")!;
+    expect(within(linha).getByRole("button", { name: "Visualizar convite" })).toBeInTheDocument();
+  });
+
+  it("não aparece num feriado, mesmo caindo numa segunda", async () => {
+    const Calendario = await importCalendario();
+    render(<Calendario hoje="2026-10-12" />);
 
     expect(screen.queryByRole("button", { name: "Visualizar convite" })).not.toBeInTheDocument();
   });

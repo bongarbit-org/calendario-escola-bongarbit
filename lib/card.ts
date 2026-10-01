@@ -9,6 +9,18 @@ export function sedeDoLocal(local: string | null): Sede {
   return "cacgb";
 }
 
+/**
+ * Em que encontros o convite faz sentido. Segundas e quartas são a grade das
+ * aulas de luteria; as sextas entram só quando o encontro é no Fab Lab Rec,
+ * onde a Trilha Empreendedora passou a acontecer. Dia sem aula e feriado,
+ * nunca — `semAula` cobre os dois.
+ */
+export function temConvite(aula: Aula): boolean {
+  if (aula.semAula) return false;
+  if (aula.diaDaSemana === "Seg" || aula.diaDaSemana === "Qua") return true;
+  return aula.diaDaSemana === "Sex" && sedeDoLocal(aula.local) === "fablab";
+}
+
 export function nomeCompletoDaSede(sede: Sede): string {
   return sede === "cacgb" ? "Centro de Arte e Cultura Grupo Bongar" : "Fab Lab Rec";
 }
