@@ -71,6 +71,18 @@ nunca lê dela para dentro do site.
 Consequência prática: se alguém editar um evento direto no Google Agenda, a
 próxima sincronização desfaz a edição. Quando notar isso, avise antes de aplicar.
 
+Única exceção, e só de leitura: `content/calendario.json` guarda `horas`
+(carga horária, ex. `3`), não horário de verdade — a planilha não traz isso.
+[`lib/agenda.ts`](lib/agenda.ts) busca o `.ics` público uma vez por carregamento
+de página (dentro de [`app/page.tsx`](app/page.tsx), que já roda por requisição)
+e monta um mapa `data -> "18h às 21h"` usado para mostrar o horário de verdade
+nos itens da lista/grade, no "Próximo encontro" e como padrão no card de convite
+(`components/CardDoDia.tsx`). Nunca escreve nada de volta nem alimenta o JSON —
+é exibição, não sincronização. Datas sem evento com horário (busca falhou, ou
+o item não bate com nenhum VEVENT — feriados, por exemplo) caem de volta na
+carga horária (`horasDe`) ou, só dentro do card, num palpite fixo ("18h às
+21h") que dá para editar à mão.
+
 ## 4. Arquitetura do site
 
 Next.js (App Router) renderizado a cada requisição (`export const dynamic =

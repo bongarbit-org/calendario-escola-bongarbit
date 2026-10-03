@@ -22,7 +22,12 @@ function grade(chave: string, itens: Aula[]) {
   return celulas;
 }
 
-export function Calendario({ hoje }: { hoje: string }) {
+export function Calendario({
+  hoje, horarios,
+}: {
+  hoje: string;
+  horarios?: Record<string, string>;
+}) {
   const [trilha, setTrilha] = useState<string | null>(null);
   const [mostrarPassadas, setMostrarPassadas] = useState(false);
   const [vista, setVista] = useState<"lista" | "grade">("lista");
@@ -148,7 +153,7 @@ export function Calendario({ hoje }: { hoje: string }) {
                 {mes.itens
                   .filter((a) => a.data === aberto)
                   .map((aula) => (
-                    <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
+                    <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} horarios={horarios} />
                   ))}
               </ul>
             )}
@@ -168,7 +173,7 @@ export function Calendario({ hoje }: { hoje: string }) {
 
           <ul>
             {mes.itens.map((aula) => (
-              <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
+              <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} horarios={horarios} />
             ))}
           </ul>
         </section>
@@ -184,9 +189,16 @@ export function Calendario({ hoje }: { hoje: string }) {
   );
 }
 
-function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
+function LinhaDaAula({
+  aula, hoje, horarios,
+}: {
+  aula: Aula;
+  hoje: string;
+  horarios?: Record<string, string>;
+}) {
   const passada = aula.data < hoje;
   const ehHoje = aula.data === hoje;
+  const horarioDaAula = !aula.semAula ? horarios?.[aula.data] : undefined;
 
   return (
     <li
@@ -236,12 +248,17 @@ function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
             {aula.trilha}
           </span>
         )}
-        {aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>}
+        {/* Prefere o horário de verdade (vindo do .ics); sem ele, só a carga horária. */}
+        {horarioDaAula ? (
+          <span className="aula__detalhe">{horarioDaAula}</span>
+        ) : (
+          aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>
+        )}
         {/* Local num dia sem aula só confunde — não há aonde ir. */}
         {aula.local && !aula.semAula && <span className="aula__detalhe">{aula.local}</span>}
         {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}
         {ehHoje && !aula.semAula && (aula.diaDaSemana === "Seg" || aula.diaDaSemana === "Qua") && (
-          <CardDoDia aula={aula} />
+          <CardDoDia aula={aula} horarioInicial={horarioDaAula} />
         )}
         {!passada && !ehHoje && (
           <span className="aula__detalhe">{emPalavras(quantosDias(aula.data))}</span>
