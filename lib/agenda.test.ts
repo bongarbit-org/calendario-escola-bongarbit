@@ -78,7 +78,7 @@ describe("buscarHorarios", () => {
     vi.unstubAllGlobals();
   });
 
-  it("devolve o mapa de horários quando o fetch funciona", async () => {
+  it("devolve { ok: true, horarios } quando o fetch funciona", async () => {
     const texto = ics(
       vevent({ summary: "Luteria do Berimbau - Aula 3", dtstart: "20260930T210000Z", dtend: "20261001T000000Z" })
     );
@@ -86,25 +86,26 @@ describe("buscarHorarios", () => {
       "fetch",
       vi.fn(async () => ({ ok: true, text: async () => texto }))
     );
-    const mapa = await buscarHorarios("https://exemplo/agenda.ics");
-    expect(mapa.get("2026-09-30")).toBe("18h às 21h");
+    const resultado = await buscarHorarios("https://exemplo/agenda.ics");
+    expect(resultado.ok).toBe(true);
+    expect(resultado.ok && resultado.horarios.get("2026-09-30")).toBe("18h às 21h");
   });
 
-  it("devolve um mapa vazio quando a resposta não é ok", async () => {
+  it("devolve { ok: false } quando a resposta não é ok", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({ ok: false, text: async () => "" }))
     );
-    expect((await buscarHorarios("https://exemplo/agenda.ics")).size).toBe(0);
+    expect(await buscarHorarios("https://exemplo/agenda.ics")).toEqual({ ok: false });
   });
 
-  it("devolve um mapa vazio quando o fetch lança (rede fora, timeout etc.)", async () => {
+  it("devolve { ok: false } quando o fetch lança (rede fora, timeout etc.)", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
         throw new Error("rede fora");
       })
     );
-    expect((await buscarHorarios("https://exemplo/agenda.ics")).size).toBe(0);
+    expect(await buscarHorarios("https://exemplo/agenda.ics")).toEqual({ ok: false });
   });
 });

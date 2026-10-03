@@ -5,6 +5,15 @@
  * campo de exibição que o JSON não tem, nunca grava nada de volta).
  */
 
+// A agenda pública "Bongarbit - Escola de Luteria - Alunos", no Google Calendar.
+// Único lugar a mudar se a agenda pública trocar de ID.
+export const ID_AGENDA =
+  "b066261daf2a5e9b5a30c0e7765f8e851572c5c5b31382976ae761f88e42bd1c@group.calendar.google.com";
+export const AGENDA_GOOGLE = `https://calendar.google.com/calendar/u/0?cid=${Buffer.from(ID_AGENDA).toString("base64")}`;
+// iPhone, Outlook e qualquer outro leitor de .ics assinam por aqui — e é o
+// mesmo .ics que app/api/horarios busca para extrair o horário real.
+export const AGENDA_ICS = `https://calendar.google.com/calendar/ical/${encodeURIComponent(ID_AGENDA)}/public/basic.ics`;
+
 const TRES_HORAS_MS = 3 * 60 * 60 * 1000;
 
 /** Um "YYYYMMDDTHHMMSS" em UTC (sem o "Z") -> data e hora no fuso de Recife (UTC-3, fixo). */
@@ -53,18 +62,23 @@ export function horarioRealParaData(icsTexto: string, data: string): string | nu
 
 const PRAZO_MS = 5_000;
 
+export type ResultadoHorarios =
+  | { ok: true; horarios: Map<string, string> }
+  | { ok: false };
+
 /**
  * Busca o .ics uma vez e devolve o mapa data -> horário inteiro. Nunca lança —
- * qualquer falha (rede, timeout, resposta ruim) devolve um mapa vazio, e quem
- * chama cai de volta no horário padrão de cada card/exibição.
+ * qualquer falha (rede, timeout, resposta ruim) devolve `{ ok: false }`, que
+ * quem chama distingue de "buscou certinho, só não achou essa data" (um mapa
+ * sem aquela chave, dentro de `{ ok: true }`).
  */
-export async function buscarHorarios(icsUrl: string): Promise<Map<string, string>> {
+export async function buscarHorarios(icsUrl: string): Promise<ResultadoHorarios> {
   try {
     const resposta = await fetch(icsUrl, { cache: "no-store", signal: AbortSignal.timeout(PRAZO_MS) });
-    if (!resposta.ok) return new Map();
+    if (!resposta.ok) return { ok: false };
     const texto = await resposta.text();
-    return horariosPorData(texto);
+    return { ok: true, horarios: horariosPorData(texto) };
   } catch {
-    return new Map();
+    return { ok: false };
   }
 }

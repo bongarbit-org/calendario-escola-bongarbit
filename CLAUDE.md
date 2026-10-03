@@ -73,15 +73,19 @@ próxima sincronização desfaz a edição. Quando notar isso, avise antes de ap
 
 Única exceção, e só de leitura: `content/calendario.json` guarda `horas`
 (carga horária, ex. `3`), não horário de verdade — a planilha não traz isso.
-[`lib/agenda.ts`](lib/agenda.ts) busca o `.ics` público uma vez por carregamento
-de página (dentro de [`app/page.tsx`](app/page.tsx), que já roda por requisição)
-e monta um mapa `data -> "18h às 21h"` usado para mostrar o horário de verdade
-nos itens da lista/grade, no "Próximo encontro" e como padrão no card de convite
-(`components/CardDoDia.tsx`). Nunca escreve nada de volta nem alimenta o JSON —
-é exibição, não sincronização. Datas sem evento com horário (busca falhou, ou
-o item não bate com nenhum VEVENT — feriados, por exemplo) caem de volta na
-carga horária (`horasDe`) ou, só dentro do card, num palpite fixo ("18h às
-21h") que dá para editar à mão.
+[`lib/agenda.ts`](lib/agenda.ts) sabe extrair o horário real do `.ics` público
+(`horariosPorData`/`buscarHorarios`), mas quem o chama é só
+[`app/api/horarios/route.ts`](app/api/horarios/route.ts) — uma rota interna,
+porque o navegador não pode buscar o `.ics` do Google direto (sem CORS). O
+primeiro HTML nunca espera por essa busca: [`components/HorariosContext.tsx`](components/HorariosContext.tsx)
+chama `/api/horarios` só depois que a página já apareceu, uma vez por
+carregamento, e guarda o resultado num Context (`carregando` → `pronto` ou
+`erro`) que `IndicadorHorario`, `DetalheProxima` e `CardDoDia` consultam. O
+horário real aparece **ao lado** da carga horária, nunca no lugar dela:
+enquanto carrega, um "···" pulsando; se a busca falhar, um "!" vermelho com
+tooltip; achando a data, o horário. Datas sem evento com horário (feriado, por
+exemplo) não mostram nada — não é erro, só ausência. Nunca escreve nada de
+volta nem alimenta o JSON — é exibição, não sincronização.
 
 ## 4. Arquitetura do site
 
@@ -95,9 +99,10 @@ hoje de quem abre a página, não o momento do build.
   porque o servidor roda em UTC; `proximaAula()`, `quantosDias()`,
   `emPalavras()` e `horasDe()` formatam o que aparece na tela.
 - [`app/page.tsx`](app/page.tsx) é a página única do site: cabeçalho, destaque
-  do próximo encontro, botões de assinatura da agenda (`ID_AGENDA` está
-  hardcoded aqui — é o único lugar a mudar se a agenda pública trocar de ID)
-  e o rodapé com a contagem de encontros e horas.
+  do próximo encontro, botões de assinatura da agenda e o rodapé com a
+  contagem de encontros e horas. `ID_AGENDA` está hardcoded em
+  [`lib/agenda.ts`](lib/agenda.ts) — é o único lugar a mudar se a agenda
+  pública trocar de ID.
 - [`components/Calendario.tsx`](components/Calendario.tsx) é o único client
   component (`"use client"`): estado de filtro por trilha, alternância
   lista/grade e mostrar/esconder aulas passadas. A grade de mês é montada à

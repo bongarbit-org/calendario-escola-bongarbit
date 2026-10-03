@@ -8,13 +8,16 @@ import {
   tarjaCacgb, tarjaFablab, linha2Variantes, linha3Variantes, linha4Variantes,
   escolherIndice, escolherIndiceDiferente, type Sede,
 } from "@/lib/card";
+import { useHorarios } from "@/components/HorariosContext";
 import styles from "./CardDoDia.module.css";
 
-// Cai aqui quando não há horário real disponível (busca ao .ics falhou, ou a
-// aula não bateu com nenhum evento) — um palpite, não um dado.
+// Cai aqui quando não há horário real disponível (ainda carregando, busca ao
+// .ics falhou, ou a aula não bateu com nenhum evento) — um palpite, não um dado.
 const HORARIO_PADRAO_FALLBACK = "18h às 21h";
 
-export function CardDoDia({ aula, horarioInicial }: { aula: Aula; horarioInicial?: string }) {
+export function CardDoDia({ aula }: { aula: Aula }) {
+  const estadoHorarios = useHorarios();
+  const horarioInicial = estadoHorarios.status === "pronto" ? estadoHorarios.horarios[aula.data] : undefined;
   const horarioPadrao = horarioInicial ?? HORARIO_PADRAO_FALLBACK;
 
   const [aberto, setAberto] = useState(false);

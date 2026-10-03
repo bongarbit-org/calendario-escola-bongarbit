@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import type { Aula } from "@/lib/calendario";
+import { HorariosContext, type EstadoHorarios } from "@/components/HorariosContext";
 
 afterEach(cleanup);
 
@@ -19,6 +20,14 @@ const AULA: Aula = {
 async function importCardDoDia() {
   const { CardDoDia } = await import("@/components/CardDoDia");
   return CardDoDia;
+}
+
+function renderComHorarios(aula: Aula, estado: EstadoHorarios, CardDoDia: Awaited<ReturnType<typeof importCardDoDia>>) {
+  return render(
+    <HorariosContext.Provider value={estado}>
+      <CardDoDia aula={aula} />
+    </HorariosContext.Provider>
+  );
 }
 
 describe("CardDoDia", () => {
@@ -72,9 +81,13 @@ describe("CardDoDia", () => {
     expect(container.querySelector('img[src*="faixa-vila"]')).not.toBeInTheDocument();
   });
 
-  it("usa horarioInicial como horário padrão quando fornecido, em vez de 18h às 21h", async () => {
+  it("usa o horário do contexto (status pronto) como padrão, em vez de 18h às 21h", async () => {
     const CardDoDia = await importCardDoDia();
-    const { container } = render(<CardDoDia aula={AULA} horarioInicial="15h às 18h" />);
+    const { container } = renderComHorarios(
+      AULA,
+      { status: "pronto", horarios: { [AULA.data]: "15h às 18h" } },
+      CardDoDia
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
@@ -84,9 +97,9 @@ describe("CardDoDia", () => {
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
   });
 
-  it("fechar e reabrir com horarioInicial volta para ele, não para 18h às 21h", async () => {
+  it("fechar e reabrir com horário do contexto volta para ele, não para 18h às 21h", async () => {
     const CardDoDia = await importCardDoDia();
-    render(<CardDoDia aula={AULA} horarioInicial="15h às 18h" />);
+    renderComHorarios(AULA, { status: "pronto", horarios: { [AULA.data]: "15h às 18h" } }, CardDoDia);
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
@@ -101,6 +114,16 @@ describe("CardDoDia", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("usa o horário padrão quando o contexto está carregando ou deu erro", async () => {
+    const CardDoDia = await importCardDoDia();
+    renderComHorarios(AULA, { status: "erro" }, CardDoDia);
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Card gerado");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
   });
 
   it("fechar e reabrir volta ao horário padrão 18h às 21h", async () => {

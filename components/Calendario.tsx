@@ -5,6 +5,7 @@ import {
   calendario, dia, emPalavras, horasDe, mesCurto, quantosDias, type Aula,
 } from "@/lib/calendario";
 import { CardDoDia } from "@/components/CardDoDia";
+import { IndicadorHorario } from "@/components/IndicadorHorario";
 import { temConvite } from "@/lib/card";
 
 const SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -23,12 +24,7 @@ function grade(chave: string, itens: Aula[]) {
   return celulas;
 }
 
-export function Calendario({
-  hoje, horarios,
-}: {
-  hoje: string;
-  horarios?: Record<string, string>;
-}) {
+export function Calendario({ hoje }: { hoje: string }) {
   const [trilha, setTrilha] = useState<string | null>(null);
   const [mostrarPassadas, setMostrarPassadas] = useState(false);
   const [vista, setVista] = useState<"lista" | "grade">("lista");
@@ -154,7 +150,7 @@ export function Calendario({
                 {mes.itens
                   .filter((a) => a.data === aberto)
                   .map((aula) => (
-                    <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} horarios={horarios} />
+                    <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
                   ))}
               </ul>
             )}
@@ -174,7 +170,7 @@ export function Calendario({
 
           <ul>
             {mes.itens.map((aula) => (
-              <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} horarios={horarios} />
+              <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
             ))}
           </ul>
         </section>
@@ -190,16 +186,9 @@ export function Calendario({
   );
 }
 
-function LinhaDaAula({
-  aula, hoje, horarios,
-}: {
-  aula: Aula;
-  hoje: string;
-  horarios?: Record<string, string>;
-}) {
+function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
   const passada = aula.data < hoje;
   const ehHoje = aula.data === hoje;
-  const horarioDaAula = !aula.semAula ? horarios?.[aula.data] : undefined;
 
   return (
     <li
@@ -249,16 +238,13 @@ function LinhaDaAula({
             {aula.trilha}
           </span>
         )}
-        {/* Prefere o horário de verdade (vindo do .ics); sem ele, só a carga horária. */}
-        {horarioDaAula ? (
-          <span className="aula__detalhe">{horarioDaAula}</span>
-        ) : (
-          aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>
-        )}
+        {aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>}
+        {/* Horário real, à parte da carga horária — nunca a substitui. */}
+        <IndicadorHorario aula={aula} />
         {/* Local num dia sem aula só confunde — não há aonde ir. */}
         {aula.local && !aula.semAula && <span className="aula__detalhe">{aula.local}</span>}
         {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}
-        {ehHoje && temConvite(aula) && <CardDoDia aula={aula} horarioInicial={horarioDaAula} />}
+        {ehHoje && temConvite(aula) && <CardDoDia aula={aula} />}
         {!passada && !ehHoje && (
           <span className="aula__detalhe">{emPalavras(quantosDias(aula.data))}</span>
         )}

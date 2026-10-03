@@ -177,6 +177,11 @@ a:hover{color:var(--text-link-hover)}
 .etiqueta--sem-aula{background:transparent;color:var(--text-muted);
   border:var(--rule-hair) dashed var(--text-muted)}
 .aula__detalhe{font-size:var(--fs-caption);color:var(--text-muted);white-space:nowrap}
+.aula__detalhe--carregando{font-size:var(--fs-caption);color:var(--text-muted);white-space:nowrap;
+  animation:horario-pulsar 1.2s ease-in-out infinite}
+.aula__detalhe--erro{font-size:var(--fs-caption);color:var(--terracota-queimada);font-weight:var(--fw-semibold);
+  white-space:nowrap;cursor:help}
+@keyframes horario-pulsar{0%,100%{opacity:.25}50%{opacity:.9}}
 
 /* ---------- grade do calendário ---------- */
 
