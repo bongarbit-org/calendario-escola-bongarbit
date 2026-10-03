@@ -4,6 +4,7 @@ import { temConvite } from "@/lib/card";
 import {
   calendario, dia, emPalavras, hoje, horasDe, mesCurto, proximaAula, quantosDias, todasAsAulas,
 } from "@/lib/calendario";
+import { buscarHorarios } from "@/lib/agenda";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,21 @@ const AGENDA_GOOGLE = `https://calendar.google.com/calendar/u/0?cid=${Buffer.fro
 // iPhone, Outlook e qualquer outro leitor de .ics assinam por aqui.
 const AGENDA_ICS = `https://calendar.google.com/calendar/ical/${encodeURIComponent(ID_AGENDA)}/public/basic.ics`;
 
-export default function Pagina() {
+export default async function Pagina() {
   const h = hoje();
   const proxima = proximaAula();
   const aulas = todasAsAulas();
   const pelaFrente = aulas.filter((a) => a.data >= h && !a.semAula);
   const horas = pelaFrente.reduce((s, a) => s + (a.horas ?? 0), 0);
+
+  // Busca os horários reais uma única vez, aqui no servidor, a cada carregamento
+  // da página — nunca de novo por causa de um clique em "gerar convite"/"gerar
+  // novamente" nem por causa de rolar a lista. Serializa como objeto simples
+  // porque Map não atravessa a fronteira server→client component.
+  const mapaHorarios = await buscarHorarios(AGENDA_ICS);
+  const horarios = Object.fromEntries(mapaHorarios);
+  const horarioReal = mapaHorarios.get(h) ?? null;
+  const horarioProxima = proxima ? mapaHorarios.get(proxima.data) ?? null : null;
 
   return (
     <main className="pagina">
@@ -53,13 +63,13 @@ export default function Pagina() {
             {proxima.topico && <p className="aula__topico">{proxima.topico}</p>}
             {proxima.descricao && <p className="aula__descricao">{proxima.descricao}</p>}
             <p className="aula__detalhe" style={{ marginTop: "var(--space-3)" }}>
-              {[proxima.trilha, horasDe(proxima.horas), proxima.local]
+              {[proxima.trilha, horarioProxima ?? horasDe(proxima.horas), proxima.local]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
             {proxima.data === h && temConvite(proxima) && (
               <div style={{ marginTop: "var(--space-3)" }}>
-                <CardDoDia aula={proxima} />
+                <CardDoDia aula={proxima} horarioInicial={horarioReal ?? undefined} />
               </div>
             )}
           </div>
@@ -80,7 +90,7 @@ export default function Pagina() {
         </a>
       </section>
 
-      <Calendario hoje={h} />
+      <Calendario hoje={h} horarios={horarios} />
 
       <footer className="rodape">
         <p>

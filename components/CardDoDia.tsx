@@ -10,15 +10,19 @@ import {
 } from "@/lib/card";
 import styles from "./CardDoDia.module.css";
 
-const HORARIO_PADRAO = "18h às 21h";
+// Cai aqui quando não há horário real disponível (busca ao .ics falhou, ou a
+// aula não bateu com nenhum evento) — um palpite, não um dado.
+const HORARIO_PADRAO_FALLBACK = "18h às 21h";
 
-export function CardDoDia({ aula }: { aula: Aula }) {
+export function CardDoDia({ aula, horarioInicial }: { aula: Aula; horarioInicial?: string }) {
+  const horarioPadrao = horarioInicial ?? HORARIO_PADRAO_FALLBACK;
+
   const [aberto, setAberto] = useState(false);
   const [sede, setSede] = useState<Sede>("cacgb");
   const [saudacao, setSaudacao] = useState<"Bom dia!" | "Boa tarde!">("Bom dia!");
-  const [horario, setHorario] = useState(HORARIO_PADRAO);
+  const [horario, setHorario] = useState(horarioPadrao);
   const [editandoHorario, setEditandoHorario] = useState(false);
-  const [horarioRascunho, setHorarioRascunho] = useState(HORARIO_PADRAO);
+  const [horarioRascunho, setHorarioRascunho] = useState(horarioPadrao);
   const [indiceLinha2, setIndiceLinha2] = useState(0);
   const [indiceLinha3, setIndiceLinha3] = useState(0);
   const [indiceLinha4, setIndiceLinha4] = useState(0);
@@ -40,9 +44,9 @@ export function CardDoDia({ aula }: { aula: Aula }) {
     const sedeDeAgora = sedeDoLocal(aula.local);
     setSede(sedeDeAgora);
     setSaudacao(saudacaoPorHora(new Date().getHours()));
-    setHorario(HORARIO_PADRAO);
+    setHorario(horarioPadrao);
     setEditandoHorario(false);
-    setIndiceLinha2(escolherIndice(linha2Variantes(sedeDeAgora, HORARIO_PADRAO).length));
+    setIndiceLinha2(escolherIndice(linha2Variantes(sedeDeAgora, horarioPadrao).length));
     setIndiceLinha3(escolherIndice(linha3Variantes(aula).length));
     setIndiceLinha4(escolherIndice(linha4Variantes().length));
     setErro(null);

@@ -72,6 +72,37 @@ describe("CardDoDia", () => {
     expect(container.querySelector('img[src*="faixa-vila"]')).not.toBeInTheDocument();
   });
 
+  it("usa horarioInicial como horário padrão quando fornecido, em vez de 18h às 21h", async () => {
+    const CardDoDia = await importCardDoDia();
+    const { container } = render(<CardDoDia aula={AULA} horarioInicial="15h às 18h" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Card gerado");
+
+    expect(container.querySelector("[class*='tarja']")!.textContent).toContain("15h às 18h");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("fechar e reabrir com horarioInicial volta para ele, não para 18h às 21h", async () => {
+    const CardDoDia = await importCardDoDia();
+    render(<CardDoDia aula={AULA} horarioInicial="15h às 18h" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Card gerado");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex.: 8h às 12h"), { target: { value: "8h às 12h" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(3));
+
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
   it("fechar e reabrir volta ao horário padrão 18h às 21h", async () => {
     const CardDoDia = await importCardDoDia();
     render(<CardDoDia aula={AULA} />);

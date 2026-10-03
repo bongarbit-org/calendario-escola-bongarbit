@@ -127,6 +127,12 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
       expect(src.length).toBeGreaterThan(5_000); // uma captura real não é um PNG de 4 bytes
 
       const linhaAntes = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
+      // O horário inicial agora vem de um fetch real ao .ics (lib/agenda.ts) — não é
+      // mais sempre "18h às 21h". Extrai o que veio, para conferir que "gerar
+      // novamente" troca só a frase, nunca o horário.
+      const horarioInicial = linhaAntes?.match(/\d{1,2}h às \d{1,2}h/)?.[0];
+      expect(horarioInicial).toBeTruthy();
+
       await clicarPorTexto(page, "Gerar novamente");
       await page.waitForFunction(
         (textoAntigo) => {
@@ -138,7 +144,7 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
       );
       const linhaDepois = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
       expect(linhaDepois).not.toBe(linhaAntes);
-      expect(linhaDepois).toContain("18h às 21h");
+      expect(linhaDepois).toContain(horarioInicial);
 
       // O texto muda assim que se clica (é derivado do estado, não da captura), mas a
       // recaptura do PNG ainda está rolando em segundo plano — os botões de ação ficam
