@@ -5,6 +5,7 @@ import {
   calendario, dia, emPalavras, horasDe, mesCurto, quantosDias, type Aula,
 } from "@/lib/calendario";
 import { CardDoDia } from "@/components/CardDoDia";
+import { temConvite } from "@/lib/card";
 
 const SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
@@ -257,9 +258,7 @@ function LinhaDaAula({
         {/* Local num dia sem aula só confunde — não há aonde ir. */}
         {aula.local && !aula.semAula && <span className="aula__detalhe">{aula.local}</span>}
         {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}
-        {ehHoje && !aula.semAula && (aula.diaDaSemana === "Seg" || aula.diaDaSemana === "Qua") && (
-          <CardDoDia aula={aula} horarioInicial={horarioDaAula} />
-        )}
+        {ehHoje && temConvite(aula) && <CardDoDia aula={aula} horarioInicial={horarioDaAula} />}
         {!passada && !ehHoje && (
           <span className="aula__detalhe">{emPalavras(quantosDias(aula.data))}</span>
         )}
