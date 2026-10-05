@@ -20,11 +20,11 @@ const AULA: Aula = {
 };
 
 async function importarComponentes() {
-  const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await import("@/components/CardDoDia");
+  const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await import("@/components/ConviteDoDia");
   return { ConviteDoDiaProvider, BotaoVisualizarConvite };
 }
 
-describe("CardDoDia", () => {
+describe("ConviteDoDia", () => {
   it("ao clicar no gatilho, gera e mostra a imagem", async () => {
     const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
     render(
@@ -35,7 +35,7 @@ describe("CardDoDia", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
     expect(toPng).toHaveBeenCalled();
   });
 
@@ -48,7 +48,7 @@ describe("CardDoDia", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await screen.findByAltText("Card gerado");
+    await screen.findByAltText("Convite gerado");
     const linhaAntes = container.querySelector('[class*="msg"] span:nth-of-type(2)')?.textContent;
 
     fireEvent.click(screen.getByRole("button", { name: "Gerar novamente" }));
@@ -67,7 +67,7 @@ describe("CardDoDia", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await screen.findByAltText("Card gerado");
+    await screen.findByAltText("Convite gerado");
     const chamadasAntes = toPng.mock.calls.length;
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
@@ -88,7 +88,7 @@ describe("CardDoDia", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await screen.findByAltText("Card gerado");
+    await screen.findByAltText("Convite gerado");
 
     expect(container.querySelector('img[src*="bongarbit-lettering-negativo"]')).toBeInTheDocument();
     expect(container.querySelector('img[src*="fablab-rec-empilhado-branco"]')).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("CardDoDia", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await screen.findByAltText("Card gerado");
+    await screen.findByAltText("Convite gerado");
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     fireEvent.change(screen.getByPlaceholderText("Ex.: 8h às 12h"), { target: { value: "8h às 12h" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
@@ -113,7 +113,7 @@ describe("CardDoDia", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await screen.findByAltText("Card gerado");
+    await screen.findByAltText("Convite gerado");
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
@@ -132,7 +132,7 @@ describe("CardDoDia", () => {
     await vi.waitFor(() => expect(toPng).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
   });
 
   it("dois gatilhos sob o mesmo provider abrem o mesmo modal único, não um cada", async () => {
@@ -152,13 +152,13 @@ describe("CardDoDia", () => {
     expect(botoes).toHaveLength(2);
 
     fireEvent.click(botoes[0]);
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
     // Um só modal — não dois, um por gatilho.
     expect(screen.getAllByRole("button", { name: "Fechar" })).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
     fireEvent.click(botoes[1]);
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Fechar" })).toHaveLength(1);
   });
 });

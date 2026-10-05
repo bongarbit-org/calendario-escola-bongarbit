@@ -11,14 +11,16 @@ import {
   tarjaCacgb, tarjaFablab, linha2Variantes, linha3Variantes, linha4Variantes,
   escolherIndice, escolherIndiceDiferente, type Sede,
 } from "@/lib/card";
-import styles from "./CardDoDia.module.css";
+import styles from "./ConviteDoDia.module.css";
 
 const HORARIO_PADRAO = "18h às 21h";
 
 // Quantos convites ficam prontos à frente, num cantinho invisível da página,
-// enquanto o usuário nem clicou em nada ainda. "Visualizar convite" e "Gerar
-// novamente" tiram do topo dessa fila — só caem no caminho lento (gerando ao
-// vivo, com "Gerando o card…") se a fila ainda estiver vazia.
+// enquanto o usuário nem clicou em nada ainda. "Visualizar convite" só olha o
+// topo dessa fila, sem consumi-lo — fechar e reabrir mostra o mesmo convite.
+// Só "Gerar novamente" de fato descarta o topo e avança para o próximo, o que
+// dispara a reposição em segundo plano. Caem no caminho lento (gerando ao
+// vivo, com "Montando o convite…") se a fila ainda estiver vazia.
 const CAPACIDADE_FILA = 3;
 
 type ItemGerado = {
@@ -77,9 +79,9 @@ async function capturarCartao(el: HTMLDivElement): Promise<string> {
 }
 
 function Cartao({
-  cardRef, sede, aula, horario, saudacao, linha2, linha3, linha4,
+  conviteRef, sede, aula, horario, saudacao, linha2, linha3, linha4,
 }: {
-  cardRef: RefObject<HTMLDivElement | null>;
+  conviteRef: RefObject<HTMLDivElement | null>;
   sede: Sede;
   aula: Aula;
   horario: string;
@@ -93,7 +95,7 @@ function Cartao({
 
   return (
     <div
-      ref={cardRef}
+      ref={conviteRef}
       aria-hidden="true"
       className={`${styles.cartao} ${sede === "cacgb" ? styles.cacgb : styles.fablab}`}
     >
@@ -167,16 +169,17 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   const [geradoUrl, setGeradoUrl] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  // A pilha de convites prontos. `filaRef` é a fonte de verdade (lida e
-  // mutada de forma síncrona por abrir()/gerarNovamente()); `tamanhoFila`
-  // só existe para disparar o efeito que repõe a fila até CAPACIDADE_FILA.
+  // A pilha de convites prontos. `filaRef` é a fonte de verdade (lida de
+  // forma síncrona por abrir(), que só espia o topo; mutada por
+  // gerarNovamente(), que descarta o topo e avança). `tamanhoFila` só existe
+  // para disparar o efeito que repõe a fila até CAPACIDADE_FILA.
   const filaRef = useRef<ItemGerado[]>([]);
   const [tamanhoFila, setTamanhoFila] = useState(0);
   const ultimoFilaRef = useRef({ l2: -1, l3: -1, l4: -1 });
   const [filaDraft, setFilaDraft] = useState({ l2: 0, l3: 0, l4: 0, saudacao: "Bom dia!" as "Bom dia!" | "Boa tarde!" });
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const cardRefFila = useRef<HTMLDivElement>(null);
+  const conviteRef = useRef<HTMLDivElement>(null);
+  const conviteRefFila = useRef<HTMLDivElement>(null);
 
   const linha2 = aula ? linha2Variantes(sede, horario)[indiceLinha2] : "";
   const linha3 = aula ? linha3Variantes(aula)[indiceLinha3] : "";
@@ -187,22 +190,40 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     setEditandoHorario(false);
     setErro(null);
     setSede(sedeFixa);
-    setSaudacao(saudacaoPorHora(new Date().getHours()));
-    setHorario(HORARIO_PADRAO);
     setAberto(true);
 
-    const item = filaRef.current.shift();
+    // Reabrir sem ter clicado em "gerar novamente" tem que mostrar exatamente o
+    // mesmo convite de antes — não buscar de novo na fila, que pode ter andado
+    // (enchido ou não) enquanto o modal estava fechado. Só busca um convite novo
+    // (da fila ou ao vivo) na primeira vez que abre ou depois de mudar o horário.
+    if (geradoUrl && horario === HORARIO_PADRAO) {
+      setExportando(false);
+      return;
+    }
+
+    setSaudacao(saudacaoPorHora(new Date().getHours()));
+    setHorario(HORARIO_PADRAO);
+
+    // Só espia o topo — não remove. "Gerar novamente" é quem de fato consome.
+    const item = filaRef.current[0];
     if (item) {
       setIndiceLinha2(item.indiceLinha2);
       setIndiceLinha3(item.indiceLinha3);
       setIndiceLinha4(item.indiceLinha4);
       setGeradoUrl(item.url);
       setExportando(false);
-      setTamanhoFila(filaRef.current.length);
     } else {
-      setIndiceLinha2(escolherIndice(linha2Variantes(sedeFixa, HORARIO_PADRAO).length));
-      setIndiceLinha3(escolherIndice(linha3Variantes(aula).length));
-      setIndiceLinha4(escolherIndice(linha4Variantes().length));
+      const l2 = escolherIndice(linha2Variantes(sedeFixa, HORARIO_PADRAO).length);
+      const l3 = escolherIndice(linha3Variantes(aula).length);
+      const l4 = escolherIndice(linha4Variantes().length);
+      // Alinha a fila em segundo plano ao que acabou de ir pra tela — sem isso,
+      // o próximo item da fila podia coincidir por acaso com o que já está
+      // mostrado (a fila só se compara contra o item anterior DELA, não contra
+      // o que o usuário está vendo), e "gerar novamente" pareceria não fazer nada.
+      ultimoFilaRef.current = { l2, l3, l4 };
+      setIndiceLinha2(l2);
+      setIndiceLinha3(l3);
+      setIndiceLinha4(l4);
       setGeradoUrl(null);
       setCapturaPendente((n) => n + 1);
     }
@@ -210,30 +231,49 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
 
   function fechar() {
     setAberto(false);
-    setGeradoUrl(null);
+    // Mantém `geradoUrl` — é o que diz pra abrir() que já tem um convite pronto e
+    // reabrir deve só reexibi-lo, em vez de buscar outro na fila.
     setErro(null);
   }
 
   // Troca as três linhas para variantes diferentes das atuais — nunca sorteia
   // de volta a mesma frase, senão "gerar novamente" às vezes pareceria não ter feito nada.
-  // Quando o horário não foi alterado, a troca sai instantânea da fila; só cai no
-  // caminho lento (gerar ao vivo) se a fila estiver vazia ou o horário tiver sido editado
-  // (a fila só pré-gera para o horário padrão).
+  // Quando o horário não foi alterado, descarta o topo da fila (o convite que
+  // estava sendo mostrado) e espia o próximo, que sai instantâneo; só cai no
+  // caminho lento (gerar ao vivo) se a fila ficar vazia ou o horário tiver sido
+  // editado (a fila só pré-gera para o horário padrão).
   function gerarNovamente() {
     if (!aula) return;
-    const item = horario === HORARIO_PADRAO ? filaRef.current.shift() : undefined;
-    if (item) {
-      setIndiceLinha2(item.indiceLinha2);
-      setIndiceLinha3(item.indiceLinha3);
-      setIndiceLinha4(item.indiceLinha4);
-      setGeradoUrl(item.url);
+    if (horario === HORARIO_PADRAO) {
+      filaRef.current.shift();
+      const proximo = filaRef.current[0];
       setTamanhoFila(filaRef.current.length);
-    } else {
-      setIndiceLinha2((i) => escolherIndiceDiferente(linha2Variantes(sede, horario).length, i));
-      setIndiceLinha3((i) => escolherIndiceDiferente(linha3Variantes(aula).length, i));
-      setIndiceLinha4((i) => escolherIndiceDiferente(linha4Variantes().length, i));
-      setCapturaPendente((n) => n + 1);
+      // A fila só garante que cada item difere do anterior DELA (`ultimoFilaRef`,
+      // visto acima e em gerarItemFila) — não do que está na tela agora, que pode
+      // ter vindo do caminho ao vivo. Essa checagem é o cinto-e-suspensório contra
+      // a coincidência: se por acaso bater igual, cai no caminho ao vivo abaixo,
+      // que aí sim garante diferença.
+      if (
+        proximo &&
+        (proximo.indiceLinha2 !== indiceLinha2 ||
+          proximo.indiceLinha3 !== indiceLinha3 ||
+          proximo.indiceLinha4 !== indiceLinha4)
+      ) {
+        setIndiceLinha2(proximo.indiceLinha2);
+        setIndiceLinha3(proximo.indiceLinha3);
+        setIndiceLinha4(proximo.indiceLinha4);
+        setGeradoUrl(proximo.url);
+        return;
+      }
     }
+    const l2 = escolherIndiceDiferente(linha2Variantes(sede, horario).length, indiceLinha2);
+    const l3 = escolherIndiceDiferente(linha3Variantes(aula).length, indiceLinha3);
+    const l4 = escolherIndiceDiferente(linha4Variantes().length, indiceLinha4);
+    ultimoFilaRef.current = { l2, l3, l4 };
+    setIndiceLinha2(l2);
+    setIndiceLinha3(l3);
+    setIndiceLinha4(l4);
+    setCapturaPendente((n) => n + 1);
   }
 
   function aplicarHorario() {
@@ -255,7 +295,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     let cancelado = false;
 
     async function capturar() {
-      const el = cardRef.current;
+      const el = conviteRef.current;
       if (!el) return;
       setExportando(true);
       setErro(null);
@@ -309,7 +349,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       const l3 = escolherIndiceDiferente(linha3Variantes(aula!).length, ultimoFilaRef.current.l3);
       const l4 = escolherIndiceDiferente(linha4Variantes().length, ultimoFilaRef.current.l4);
       setFilaDraft({ l2, l3, l4, saudacao: saudacaoPorHora(new Date().getHours()) });
-      const el = cardRefFila.current;
+      const el = conviteRefFila.current;
       if (!el) throw new Error("cartão da fila sem DOM");
       const url = await capturarCartao(el);
       return { url, indiceLinha2: l2, indiceLinha3: l3, indiceLinha4: l4 };
@@ -341,11 +381,11 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
               </button>
 
               {geradoUrl ? (
-                <img className={styles.resultadoImg} src={geradoUrl} alt="Card gerado" />
+                <img className={styles.resultadoImg} src={geradoUrl} alt="Convite gerado" />
               ) : erro ? (
                 <p className={styles.erro}>{erro}</p>
               ) : (
-                <p className={styles.carregando}>Gerando o card…</p>
+                <p className={styles.carregando}>Montando o convite…</p>
               )}
 
               {editandoHorario ? (
@@ -401,7 +441,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
 
       {aberto && aula && (
         <Cartao
-          cardRef={cardRef}
+          conviteRef={conviteRef}
           sede={sede}
           aula={aula}
           horario={horario}
@@ -414,7 +454,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
 
       {aula && (
         <Cartao
-          cardRef={cardRefFila}
+          conviteRef={conviteRefFila}
           sede={sedeFixa}
           aula={aula}
           horario={HORARIO_PADRAO}

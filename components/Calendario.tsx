@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import {
   calendario, dia, emPalavras, horasDe, mesCurto, quantosDias, type Aula,
 } from "@/lib/calendario";
-import { BotaoVisualizarConvite } from "@/components/CardDoDia";
+import { BotaoVisualizarConvite } from "@/components/ConviteDoDia";
 import { temConvite } from "@/lib/card";
 
 const SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -243,7 +243,7 @@ function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
         {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}
         {ehHoje && temConvite(aula) && <BotaoVisualizarConvite />}
         {!passada && !ehHoje && (
-          <span className="aula__detalhe">{emPalavras(quantosDias(aula.data))}</span>
+          <span className="aula__detalhe">{emPalavras(quantosDias(aula.data, hoje))}</span>
         )}
       </div>
     </li>

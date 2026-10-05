@@ -66,7 +66,7 @@ vi.mock("@zumer/snapdom", () => ({
   snapdom: { toPng: vi.fn(async () => ({ src: "data:image/png;base64,AAAA" })) },
 }));
 // jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
-// sem isso, a espera por `<img>` do cartão (CardDoDia) nunca resolveria no teste.
+// sem isso, a espera por `<img>` do cartão (ConviteDoDia) nunca resolveria no teste.
 HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
 
 const TODAS_AS_AULAS: Aula[] = FIXTURE.meses.flatMap((m) => m.itens) as Aula[];
@@ -81,7 +81,7 @@ function aulaDoConvite(hoje: string): Aula | null {
 
 async function renderCalendario(hoje: string) {
   const { Calendario } = await import("@/components/Calendario");
-  const { ConviteDoDiaProvider } = await import("@/components/CardDoDia");
+  const { ConviteDoDiaProvider } = await import("@/components/ConviteDoDia");
   return render(
     <ConviteDoDiaProvider aula={aulaDoConvite(hoje)}>
       <Calendario hoje={hoje} />
@@ -143,7 +143,7 @@ describe("botão Visualizar convite", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fechar" })).toBeInTheDocument();
   });
 });

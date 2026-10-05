@@ -1,5 +1,5 @@
 import { Calendario } from "@/components/Calendario";
-import { BotaoVisualizarConvite, ConviteDoDiaProvider } from "@/components/CardDoDia";
+import { BotaoVisualizarConvite, ConviteDoDiaProvider } from "@/components/ConviteDoDia";
 import { temConvite } from "@/lib/card";
 import {
   calendario, dia, emPalavras, hoje, horasDe, mesCurto, proximaAula, quantosDias, todasAsAulas,
