@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import type { Aula } from "@/lib/calendario";
+import { HorariosContext } from "@/components/HorariosContext";
 
 afterEach(cleanup);
 
@@ -115,6 +116,65 @@ describe("ConviteDoDia", () => {
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Convite gerado");
 
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
+  });
+
+  it("usa o horário do contexto (status pronto) como padrão, em vez de 18h às 21h", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    const { container } = render(
+      <HorariosContext.Provider value={{ status: "pronto", horarios: { [AULA.data]: "15h às 18h" } }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+
+    expect(container.querySelector("[class*='tarja']")!.textContent).toContain("15h às 18h");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("fechar e reabrir com horário do contexto volta para ele, não para 18h às 21h", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <HorariosContext.Provider value={{ status: "pronto", horarios: { [AULA.data]: "15h às 18h" } }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex.: 8h às 12h"), { target: { value: "8h às 12h" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+    await vi.waitFor(() => expect(screen.getByRole("button", { name: "Mudar horário" })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("usa o horário padrão quando o contexto está carregando ou deu erro", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <HorariosContext.Provider value={{ status: "erro" }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
   });
