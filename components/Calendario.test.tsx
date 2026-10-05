@@ -63,11 +63,8 @@ const FIXTURE = {
 
 vi.mock("@/content/calendario.json", () => ({ default: FIXTURE }));
 vi.mock("@zumer/snapdom", () => ({
-  snapdom: { toPng: vi.fn(async () => ({ src: "data:image/png;base64,AAAA" })) },
+  snapdom: { toBlob: vi.fn(async () => new Blob(["convite"], { type: "image/png" })) },
 }));
-// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
-// sem isso, a espera por `<img>` do cartão (ConviteDoDia) nunca resolveria no teste.
-HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
 
 const TODAS_AS_AULAS: Aula[] = FIXTURE.meses.flatMap((m) => m.itens) as Aula[];
 

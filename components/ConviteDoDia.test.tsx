@@ -7,11 +7,8 @@ import { HorariosContext } from "@/components/HorariosContext";
 
 afterEach(cleanup);
 
-const toPng = vi.fn(async () => ({ src: "data:image/png;base64,AAAA" }));
-vi.mock("@zumer/snapdom", () => ({ snapdom: { toPng } }));
-// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
-// sem isso, a espera por `<img>` do cartão nunca resolveria no teste.
-HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
+const toBlob = vi.fn(async () => new Blob(["convite"], { type: "image/png" }));
+vi.mock("@zumer/snapdom", () => ({ snapdom: { toBlob } }));
 
 const AULA: Aula = {
   data: "2026-09-30", diaDaSemana: "Qua", titulo: "Luteria do Berimbau - Aula 3",
@@ -37,7 +34,7 @@ describe("ConviteDoDia", () => {
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
     expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
-    expect(toPng).toHaveBeenCalled();
+    expect(toBlob).toHaveBeenCalled();
   });
 
   it("'Gerar novamente' troca o texto mostrado", async () => {
@@ -69,14 +66,14 @@ describe("ConviteDoDia", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Convite gerado");
-    const chamadasAntes = toPng.mock.calls.length;
+    const chamadasAntes = toBlob.mock.calls.length;
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     const campo = screen.getByPlaceholderText("Ex.: 8h às 12h");
     fireEvent.change(campo, { target: { value: "8h às 12h" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
-    await vi.waitFor(() => expect(toPng.mock.calls.length).toBeGreaterThan(chamadasAntes));
+    await vi.waitFor(() => expect(toBlob.mock.calls.length).toBeGreaterThan(chamadasAntes));
   });
 
   it("sede fablab: gera, usa as imagens do Fab Lab Rec e tarja em texto puro (sem <br>)", async () => {
@@ -188,8 +185,8 @@ describe("ConviteDoDia", () => {
     );
 
     // A fila enche em segundo plano (via requestIdleCallback/setTimeout) — basta
-    // esperar o toPng ser chamado sem nenhum clique no botão de abrir.
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalled());
+    // esperar o toBlob ser chamado sem nenhum clique no botão de abrir.
+    await vi.waitFor(() => expect(toBlob).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
