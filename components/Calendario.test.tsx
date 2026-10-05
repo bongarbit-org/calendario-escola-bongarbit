@@ -63,6 +63,9 @@ vi.mock("@/content/calendario.json", () => ({ default: FIXTURE }));
 vi.mock("@zumer/snapdom", () => ({
   snapdom: { toPng: vi.fn(async () => ({ src: "data:image/png;base64,AAAA" })) },
 }));
+// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
+// sem isso, a espera por `<img>` do cartão (CardDoDia) nunca resolveria no teste.
+HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
 
 async function importCalendario() {
   const { Calendario } = await import("@/components/Calendario");

@@ -8,6 +8,9 @@ afterEach(cleanup);
 
 const toPng = vi.fn(async () => ({ src: "data:image/png;base64,AAAA" }));
 vi.mock("@zumer/snapdom", () => ({ snapdom: { toPng } }));
+// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
+// sem isso, a espera por `<img>` do cartão nunca resolveria no teste.
+HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
 
 const AULA: Aula = {
   data: "2026-09-30", diaDaSemana: "Qua", titulo: "Luteria do Berimbau - Aula 3",

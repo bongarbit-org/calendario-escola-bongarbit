@@ -12,6 +12,20 @@ import styles from "./CardDoDia.module.css";
 
 const HORARIO_PADRAO = "18h às 21h";
 
+// Espera a imagem terminar de carregar de verdade — não só o fetch, mas a
+// decodificação — antes de deixar o snapdom capturar o cartão. Sem isso, num
+// celular com rede lenta, a captura dispara antes das imagens chegarem e sai
+// com logos/faixas faltando. `decode()` não existe no jsdom dos testes nem em
+// browsers mais velhos, daí o fallback no evento `load`/`error`.
+function aguardarImagem(img: HTMLImageElement): Promise<void> {
+  if (img.complete) return Promise.resolve();
+  if (typeof img.decode === "function") return img.decode().catch(() => {});
+  return new Promise((resolve) => {
+    img.addEventListener("load", () => resolve(), { once: true });
+    img.addEventListener("error", () => resolve(), { once: true });
+  });
+}
+
 export function CardDoDia({ aula }: { aula: Aula }) {
   const [aberto, setAberto] = useState(false);
   const [sede, setSede] = useState<Sede>("cacgb");
@@ -83,6 +97,9 @@ export function CardDoDia({ aula }: { aula: Aula }) {
       setExportando(true);
       setErro(null);
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await Promise.all(
+        Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img))
+      );
       try {
         const { snapdom } = await import("@zumer/snapdom");
         const img = await snapdom.toPng(el, { scale: 2, embedFonts: false });
