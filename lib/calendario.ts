@@ -52,8 +52,13 @@ export function proximaAula(): Aula | undefined {
   return todasAsAulas().find((a) => a.data >= h && !a.semAula);
 }
 
-export function quantosDias(data: string): number {
-  const [a1, m1, d1] = hoje().split("-").map(Number);
+// `hojeStr` é opcional e serve pra quem já tem "hoje" em mãos (como o Calendario,
+// que recebe via prop): sem ele, componente cliente que chamasse hoje() de novo no
+// próprio render pegaria a data real do navegador, não a travada por
+// CALENDARIO_HOJE_TESTE no servidor — SSR e hidratação calculavam "hoje" diferente
+// e React acusava mismatch de hidratação nos testes e2e.
+export function quantosDias(data: string, hojeStr: string = hoje()): number {
+  const [a1, m1, d1] = hojeStr.split("-").map(Number);
   const [a2, m2, d2] = data.split("-").map(Number);
   return Math.round(
     (new Date(a2, m2 - 1, d2).getTime() - new Date(a1, m1 - 1, d1).getTime()) / 86400000

@@ -2,6 +2,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, within, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { temConvite } from "@/lib/card";
+import type { Aula } from "@/lib/calendario";
 
 afterEach(cleanup);
 
@@ -63,16 +65,33 @@ vi.mock("@/content/calendario.json", () => ({ default: FIXTURE }));
 vi.mock("@zumer/snapdom", () => ({
   snapdom: { toPng: vi.fn(async () => ({ src: "data:image/png;base64,AAAA" })) },
 }));
+// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
+// sem isso, a espera por `<img>` do cartão (ConviteDoDia) nunca resolveria no teste.
+HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
 
-async function importCalendario() {
+const TODAS_AS_AULAS: Aula[] = FIXTURE.meses.flatMap((m) => m.itens) as Aula[];
+
+// Mesmo cálculo que app/page.tsx faz para alimentar o ConviteDoDiaProvider:
+// a aula de hoje, só se ela de fato tem convite. O provider precisa estar
+// presente sempre que o teste for interagir com o botão — BotaoVisualizarConvite
+// lança se for usado fora dele.
+function aulaDoConvite(hoje: string): Aula | null {
+  return TODAS_AS_AULAS.find((a) => a.data === hoje && temConvite(a)) ?? null;
+}
+
+async function renderCalendario(hoje: string) {
   const { Calendario } = await import("@/components/Calendario");
-  return Calendario;
+  const { ConviteDoDiaProvider } = await import("@/components/ConviteDoDia");
+  return render(
+    <ConviteDoDiaProvider aula={aulaDoConvite(hoje)}>
+      <Calendario hoje={hoje} />
+    </ConviteDoDiaProvider>
+  );
 }
 
 describe("botão Visualizar convite", () => {
   it("aparece só na linha de hoje, numa quarta, na vista de lista", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-09-30" />);
+    await renderCalendario("2026-09-30");
 
     expect(screen.getAllByRole("button", { name: "Visualizar convite" })).toHaveLength(1);
 
@@ -84,32 +103,32 @@ describe("botão Visualizar convite", () => {
   });
 
   it("não aparece numa sexta fora do Fab Lab", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-10-02" />);
+    await renderCalendario("2026-10-02");
 
     expect(screen.queryByRole("button", { name: "Visualizar convite" })).not.toBeInTheDocument();
   });
 
   it("aparece na sexta quando o encontro é no Fab Lab Rec", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-10-16" />);
+    await renderCalendario("2026-10-16");
 
+    // Esse título, por não seguir o padrão "Luteria do/da X - Aula N", também aparece
+    // dentro do cartão oculto que a fila gera em segundo plano (sempre montado, mesmo
+    // fora do modal) — por isso getAllByText, e filtra o que está dentro de uma <li>.
     const linha = screen
-      .getByText("Encontro da Trilha de Educação Empreendedora (4)")
-      .closest("li")!;
+      .getAllByText("Encontro da Trilha de Educação Empreendedora (4)")
+      .map((el) => el.closest("li"))
+      .find((li): li is HTMLLIElement => li !== null)!;
     expect(within(linha).getByRole("button", { name: "Visualizar convite" })).toBeInTheDocument();
   });
 
   it("não aparece num feriado, mesmo caindo numa segunda", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-10-12" />);
+    await renderCalendario("2026-10-12");
 
     expect(screen.queryByRole("button", { name: "Visualizar convite" })).not.toBeInTheDocument();
   });
 
   it("aparece também no detalhe expandido da vista de grade", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-09-30" />);
+    await renderCalendario("2026-09-30");
 
     fireEvent.click(screen.getByRole("button", { name: "Calendário" }));
     const secaoSetembro = screen.getByText("Setembro 2026").closest("section")!;
@@ -120,12 +139,11 @@ describe("botão Visualizar convite", () => {
   });
 
   it("clicar no botão abre o modal e mostra a imagem gerada", async () => {
-    const Calendario = await importCalendario();
-    render(<Calendario hoje="2026-09-30" />);
+    await renderCalendario("2026-09-30");
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
-    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fechar" })).toBeInTheDocument();
   });
 });

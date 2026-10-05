@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
 import { readFileSync } from "node:fs";
-import puppeteer, { type Browser, type Page } from "puppeteer";
+import puppeteer, { KnownDevices, PredefinedNetworkConditions, type Browser, type Page } from "puppeteer";
 
 /**
  * E2E de verdade: sobe o build de produção do site, abre num Chromium headless
@@ -89,7 +89,7 @@ function derrubarServidor(processo: ChildProcess) {
   }
 }
 
-describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
+describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
   let servidor: ChildProcess;
   let browser: Browser;
   let page: Page;
@@ -121,7 +121,7 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
       const botao = await page.waitForSelector("xpath/.//button[normalize-space()='Visualizar convite']");
       await botao!.click();
 
-      const img = await page.waitForSelector('img[alt="Card gerado"]', { timeout: 40_000 });
+      const img = await page.waitForSelector('img[alt="Convite gerado"]', { timeout: 40_000 });
       const src = await img!.evaluate((el) => (el as HTMLImageElement).src);
       expect(src.startsWith("data:image/png;base64,")).toBe(true);
       expect(src.length).toBeGreaterThan(5_000); // uma captura real não é um PNG de 4 bytes
@@ -180,7 +180,7 @@ describe("CardDoDia — Chromium real, hoje é dia de aula", () => {
   );
 });
 
-describe("CardDoDia — Chromium real, hoje é feriado numa segunda/quarta", () => {
+describe("ConviteDoDia — Chromium real, hoje é feriado numa segunda/quarta", () => {
   let servidor: ChildProcess;
   let browser: Browser;
   let page: Page;
@@ -201,4 +201,100 @@ describe("CardDoDia — Chromium real, hoje é feriado numa segunda/quarta", () 
     const botoes = await page.$$("xpath/.//button[normalize-space()='Visualizar convite']");
     expect(botoes).toHaveLength(0);
   });
+});
+
+/**
+ * Sob rede lenta, o HTML do botão já chega na primeira resposta (SSR), mas o
+ * `onClick` só é ligado depois que o bundle React termina de baixar e hidratar —
+ * um clique antes disso não faz nada, do jeito que não faria pra um aluno de
+ * verdade tocando a tela cedo demais. Tenta de novo até o modal abrir (sinal
+ * rápido, não depende da captura lenta do PNG) em vez de assumir que o primeiro
+ * clique colou.
+ */
+async function clicarAteAbrirModal(page: Page, tentativas = 40): Promise<void> {
+  for (let i = 0; i < tentativas; i++) {
+    await clicarPorTexto(page, "Visualizar convite");
+    const abriu = await page
+      .waitForSelector("[class*='caixa']", { timeout: 1_500 })
+      .then(() => true)
+      .catch(() => false);
+    if (abriu) return;
+  }
+  throw new Error("Clique em 'Visualizar convite' não abriu o modal depois de várias tentativas.");
+}
+
+const PORTA_MOBILE_LENTA = 3913;
+
+describe("ConviteDoDia — mobile e conexão lenta (Chromium real)", () => {
+  let servidor: ChildProcess;
+  let browser: Browser;
+  let page: Page;
+
+  beforeAll(async () => {
+    servidor = await subirServidor(PORTA_MOBILE_LENTA, DATA_COM_AULA);
+    browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    page = await browser.newPage();
+    // iPhone 13 (viewport + user agent + touch) e Fast 3G (~180kB/s, 500ms de
+    // latência) — uma conexão ruim de verdade, mas que ainda carrega as ~2,8MB de
+    // imagens do convite (faixa-vila.png sozinha é 1,7MB) num tempo de teste razoável;
+    // "Slow 3G" (50kB/s) levaria quase um minuto só nas imagens. É sob essa
+    // throttle que o fix de "esperar as imagens carregarem antes de capturar o PNG"
+    // (b566d4e) importa de verdade: sem ele, a corrida vira miss de verdade com rede
+    // lenta, não só em teoria.
+    await page.emulate(KnownDevices["iPhone 13"]);
+    await page.emulateNetworkConditions(PredefinedNetworkConditions["Fast 3G"]);
+    await page.goto(`http://localhost:${PORTA_MOBILE_LENTA}/`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+  }, 120_000);
+
+  afterAll(async () => {
+    await browser?.close();
+    if (servidor) derrubarServidor(servidor);
+  });
+
+  it(
+    "gera o convite, não mexe na fila só de visualizar, e só avança com 'gerar novamente'",
+    async () => {
+      // Nada de scroll horizontal na tela do celular.
+      const semEstouroLateral = await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
+      );
+      expect(semEstouroLateral).toBe(true);
+
+      await page.waitForSelector(
+        "xpath/.//button[normalize-space()='Visualizar convite']",
+        { timeout: 90_000 }
+      );
+      await clicarAteAbrirModal(page);
+
+      const img1 = await page.waitForSelector('img[alt="Convite gerado"]', { timeout: 90_000 });
+      const srcAbrir = await img1!.evaluate((el) => (el as HTMLImageElement).src);
+      const linhaAbrir = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
+      expect(srcAbrir.startsWith("data:image/png;base64,")).toBe(true);
+      expect(srcAbrir.length).toBeGreaterThan(5_000);
+
+      // Fecha e reabre sem clicar em "gerar novamente" — tem que vir exatamente o
+      // mesmo convite de antes, não o próximo da fila.
+      await clicarPorTexto(page, "Fechar");
+      await clicarPorTexto(page, "Visualizar convite");
+      const img2 = await page.waitForSelector('img[alt="Convite gerado"]', { timeout: 90_000 });
+      const srcReabrir = await img2!.evaluate((el) => (el as HTMLImageElement).src);
+      const linhaReabrir = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
+      expect(srcReabrir).toBe(srcAbrir);
+      expect(linhaReabrir).toBe(linhaAbrir);
+
+      // Só agora, com "gerar novamente", o convite deve de fato trocar.
+      await clicarPorTexto(page, "Gerar novamente");
+      await page.waitForFunction(
+        (textoAntigo) => {
+          const el = document.querySelector("[class*='msg'] span:nth-of-type(2)");
+          return !!el && el.textContent !== textoAntigo;
+        },
+        { timeout: 90_000 },
+        linhaReabrir
+      );
+      const linhaDepoisDeGerar = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
+      expect(linhaDepoisDeGerar).not.toBe(linhaReabrir);
+    },
+    180_000
+  );
 });

@@ -1,5 +1,5 @@
 import { Calendario } from "@/components/Calendario";
-import { CardDoDia } from "@/components/CardDoDia";
+import { BotaoVisualizarConvite, ConviteDoDiaProvider } from "@/components/ConviteDoDia";
 import { DetalheProxima } from "@/components/DetalheProxima";
 import { ProvedorHorarios } from "@/components/HorariosContext";
 import { temConvite } from "@/lib/card";
@@ -16,6 +16,9 @@ export default function Pagina() {
   const aulas = todasAsAulas();
   const pelaFrente = aulas.filter((a) => a.data >= h && !a.semAula);
   const horas = pelaFrente.reduce((s, a) => s + (a.horas ?? 0), 0);
+  // O destaque "Próximo encontro" e a linha de hoje no calendário mostram o
+  // mesmo convite — um só provider, mais abaixo, cobre os dois.
+  const aulaDoConvite = proxima && proxima.data === h && temConvite(proxima) ? proxima : null;
 
   return (
     <ProvedorHorarios>
@@ -36,44 +39,46 @@ export default function Pagina() {
           </p>
         </header>
 
-        {proxima && (
-          <section className="proxima">
-            <div className="proxima__data">
-              <div className="proxima__dia">{dia(proxima.data)}</div>
-              <div className="proxima__mes">{mesCurto(proxima.data)}</div>
-            </div>
-            <div className="proxima__corpo">
-              <div className="olho">
-                Próximo encontro · {proxima.diaDaSemana} · {emPalavras(quantosDias(proxima.data))}
+        <ConviteDoDiaProvider aula={aulaDoConvite}>
+          {proxima && (
+            <section className="proxima">
+              <div className="proxima__data">
+                <div className="proxima__dia">{dia(proxima.data)}</div>
+                <div className="proxima__mes">{mesCurto(proxima.data)}</div>
               </div>
-              <h2 className="proxima__titulo">{proxima.titulo}</h2>
-              {proxima.topico && <p className="aula__topico">{proxima.topico}</p>}
-              {proxima.descricao && <p className="aula__descricao">{proxima.descricao}</p>}
-              <DetalheProxima aula={proxima} />
-              {proxima.data === h && temConvite(proxima) && (
-                <div style={{ marginTop: "var(--space-3)" }}>
-                  <CardDoDia aula={proxima} />
+              <div className="proxima__corpo">
+                <div className="olho">
+                  Próximo encontro · {proxima.diaDaSemana} · {emPalavras(quantosDias(proxima.data))}
                 </div>
-              )}
-            </div>
+                <h2 className="proxima__titulo">{proxima.titulo}</h2>
+                {proxima.topico && <p className="aula__topico">{proxima.topico}</p>}
+                {proxima.descricao && <p className="aula__descricao">{proxima.descricao}</p>}
+                <DetalheProxima aula={proxima} />
+                {aulaDoConvite && (
+                  <div style={{ marginTop: "var(--space-3)" }}>
+                    <BotaoVisualizarConvite />
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          <section className="assinar">
+            <p className="assinar__texto">
+              <strong>Leve o calendário no celular.</strong> Assine a agenda da escola e as aulas
+              aparecem sozinhas no seu telefone, com lembrete e tudo — se uma data mudar, muda lá
+              também.
+            </p>
+            <a className="botao" href={AGENDA_GOOGLE} target="_blank" rel="noreferrer">
+              Adicionar ao Google Agenda
+            </a>
+            <a className="botao botao--fantasma" href={AGENDA_ICS} target="_blank" rel="noreferrer">
+              Outro app (.ics)
+            </a>
           </section>
-        )}
 
-        <section className="assinar">
-          <p className="assinar__texto">
-            <strong>Leve o calendário no celular.</strong> Assine a agenda da escola e as aulas
-            aparecem sozinhas no seu telefone, com lembrete e tudo — se uma data mudar, muda lá
-            também.
-          </p>
-          <a className="botao" href={AGENDA_GOOGLE} target="_blank" rel="noreferrer">
-            Adicionar ao Google Agenda
-          </a>
-          <a className="botao botao--fantasma" href={AGENDA_ICS} target="_blank" rel="noreferrer">
-            Outro app (.ics)
-          </a>
-        </section>
-
-        <Calendario hoje={h} />
+          <Calendario hoje={h} />
+        </ConviteDoDiaProvider>
 
         <footer className="rodape">
           <p>
