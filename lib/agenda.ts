@@ -26,7 +26,7 @@ function paraRecife(dtUtc: string): { data: string; hora: number } {
   const instante = Date.UTC(ano, mes - 1, dia, hora, minuto);
   const recife = new Date(instante - TRES_HORAS_MS);
   const data = `${recife.getUTCFullYear()}-${String(recife.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    recife.getUTCDate()
+    recife.getUTCDate(),
   ).padStart(2, "0")}`;
   return { data, hora: recife.getUTCHours() };
 }
@@ -40,7 +40,11 @@ export function horariosPorData(icsTexto: string): Map<string, string> {
   const blocos = icsTexto.split("BEGIN:VEVENT").slice(1);
 
   for (const bloco of blocos) {
-    const resumo = bloco.match(/SUMMARY:([^\r\n]+)/)?.[1]?.trim().toLowerCase() ?? "";
+    const resumo =
+      bloco
+        .match(/SUMMARY:([^\r\n]+)/)?.[1]
+        ?.trim()
+        .toLowerCase() ?? "";
     if (resumo.includes("busy")) continue;
 
     const ini = bloco.match(/DTSTART(?:;[^:\r\n]*)?:(\d{8}T\d{6})Z/)?.[1];
@@ -56,7 +60,10 @@ export function horariosPorData(icsTexto: string): Map<string, string> {
 }
 
 /** Atalho para uma única data — usado nos testes e em quem só precisa de uma. */
-export function horarioRealParaData(icsTexto: string, data: string): string | null {
+export function horarioRealParaData(
+  icsTexto: string,
+  data: string,
+): string | null {
   return horariosPorData(icsTexto).get(data) ?? null;
 }
 
@@ -72,9 +79,14 @@ export type ResultadoHorarios =
  * quem chama distingue de "buscou certinho, só não achou essa data" (um mapa
  * sem aquela chave, dentro de `{ ok: true }`).
  */
-export async function buscarHorarios(icsUrl: string): Promise<ResultadoHorarios> {
+export async function buscarHorarios(
+  icsUrl: string,
+): Promise<ResultadoHorarios> {
   try {
-    const resposta = await fetch(icsUrl, { cache: "no-store", signal: AbortSignal.timeout(PRAZO_MS) });
+    const resposta = await fetch(icsUrl, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(PRAZO_MS),
+    });
     if (!resposta.ok) return { ok: false };
     const texto = await resposta.text();
     return { ok: true, horarios: horariosPorData(texto) };

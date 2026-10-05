@@ -1,17 +1,29 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import type { Aula } from "@/lib/calendario";
-import { HorariosContext, type EstadoHorarios } from "@/components/HorariosContext";
 import { DetalheProxima } from "@/components/DetalheProxima";
+import {
+  type EstadoHorarios,
+  HorariosContext,
+} from "@/components/HorariosContext";
+import type { Aula } from "@/lib/calendario";
 
 afterEach(cleanup);
 
 const AULA: Aula = {
-  data: "2026-09-30", diaDaSemana: "Qua", titulo: "Luteria do Berimbau - Aula 3",
-  descricao: null, topico: null, trilha: "Luteria Orgânica", cor: "#31671f",
-  horas: 3, local: "CACGB", equipe: "prof. Ninho Brown Xambá", modulo: "Módulo 2",
+  data: "2026-09-30",
+  diaDaSemana: "Qua",
+  titulo: "Luteria do Berimbau - Aula 3",
+  descricao: null,
+  topico: null,
+  trilha: "Luteria Orgânica",
+  cor: "#31671f",
+  horas: 3,
+  local: "CACGB",
+  equipe: "prof. Ninho Brown Xambá",
+  modulo: "Módulo 2",
   semAula: false,
 };
 
@@ -19,7 +31,7 @@ function renderCom(estado: EstadoHorarios) {
   return render(
     <HorariosContext.Provider value={estado}>
       <DetalheProxima aula={AULA} />
-    </HorariosContext.Provider>
+    </HorariosContext.Provider>,
   );
 }
 
@@ -33,13 +45,17 @@ describe("DetalheProxima", () => {
 
   it("acrescenta o indicador de carregamento sem esconder a carga horária", () => {
     renderCom({ status: "carregando" });
-    expect(screen.getByLabelText("Carregando horário real")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Carregando horário real"),
+    ).toBeInTheDocument();
     expect(screen.getByText(/3h/)).toBeInTheDocument();
   });
 
   it("acrescenta a exclamação de erro sem esconder a carga horária", () => {
     renderCom({ status: "erro" });
-    expect(screen.getByLabelText("Não foi possível obter o horário das aulas")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Não foi possível obter o horário das aulas"),
+    ).toBeInTheDocument();
     expect(screen.getByText(/3h/)).toBeInTheDocument();
   });
 
@@ -51,8 +67,12 @@ describe("DetalheProxima", () => {
 
   it("não acrescenta nada quando a busca terminou mas não achou a data (não é erro)", () => {
     renderCom({ status: "pronto", horarios: {} });
-    expect(screen.queryByLabelText("Não foi possível obter o horário das aulas")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Carregando horário real")).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Não foi possível obter o horário das aulas"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Carregando horário real"),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/3h/)).toBeInTheDocument();
   });
 });

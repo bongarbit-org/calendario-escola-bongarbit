@@ -1,12 +1,21 @@
 import { Calendario } from "@/components/Calendario";
-import { BotaoVisualizarConvite, ConviteDoDiaProvider } from "@/components/ConviteDoDia";
+import {
+  BotaoVisualizarConvite,
+  ConviteDoDiaProvider,
+} from "@/components/ConviteDoDia";
 import { DetalheProxima } from "@/components/DetalheProxima";
 import { ProvedorHorarios } from "@/components/HorariosContext";
-import { temConvite } from "@/lib/card";
-import {
-  calendario, dia, emPalavras, hoje, mesCurto, proximaAula, quantosDias, todasAsAulas,
-} from "@/lib/calendario";
 import { AGENDA_GOOGLE, AGENDA_ICS } from "@/lib/agenda";
+import {
+  dia,
+  emPalavras,
+  hoje,
+  mesCurto,
+  proximaAula,
+  quantosDias,
+  todasAsAulas,
+} from "@/lib/calendario";
+import { temConvite } from "@/lib/card";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +27,8 @@ export default function Pagina() {
   const horas = pelaFrente.reduce((s, a) => s + (a.horas ?? 0), 0);
   // O destaque "Próximo encontro" e a linha de hoje no calendário mostram o
   // mesmo convite — um só provider, mais abaixo, cobre os dois.
-  const aulaDoConvite = proxima && proxima.data === h && temConvite(proxima) ? proxima : null;
+  const aulaDoConvite =
+    proxima && proxima.data === h && temConvite(proxima) ? proxima : null;
 
   return (
     <ProvedorHorarios>
@@ -27,15 +37,16 @@ export default function Pagina() {
           <div className="olho">Escola Bongarbit</div>
           <h1 className="topo__titulo">Calendário de aulas</h1>
           <p className="topo__nota">
-            Os encontros da escola de luteria, de setembro em diante. As aulas de luteria,
-            orgânica e digital, são no <strong>CACGB</strong>, às segundas e quartas.
-            Outubro é sobretudo da Trilha Empreendedora, que se divide entre as{" "}
-            <strong>quartas no CACGB</strong> (7 e 21) e as{" "}
-            <strong>sextas no Fab Lab Rec</strong> (16 e 30) — endereço diferente, fique
-            atento. Fora isso, o mês tem a aula de Berimbau da segunda 5 e a{" "}
-            <strong>Vivência na Mata</strong>, no sábado 10, em Camaragibe Velho. Os Cafés
-            com Bongarbit acontecem aos sábados, na Cabaça do CACGB — menos o de novembro,
-            que é na Aldeia Povo Marikito, em Escada.
+            Os encontros da escola de luteria, de setembro em diante. As aulas
+            de luteria, orgânica e digital, são no <strong>CACGB</strong>, às
+            segundas e quartas. Outubro é sobretudo da Trilha Empreendedora, que
+            se divide entre as <strong>quartas no CACGB</strong> (7 e 21) e as{" "}
+            <strong>sextas no Fab Lab Rec</strong> (16 e 30) — endereço
+            diferente, fique atento. Fora isso, o mês tem a aula de Berimbau da
+            segunda 5 e a <strong>Vivência na Mata</strong>, no sábado 10, em
+            Camaragibe Velho. Os Cafés com Bongarbit acontecem aos sábados, na
+            Cabaça do CACGB — menos o de novembro, que é na Aldeia Povo
+            Marikito, em Escada.
           </p>
         </header>
 
@@ -48,11 +59,16 @@ export default function Pagina() {
               </div>
               <div className="proxima__corpo">
                 <div className="olho">
-                  Próximo encontro · {proxima.diaDaSemana} · {emPalavras(quantosDias(proxima.data))}
+                  Próximo encontro · {proxima.diaDaSemana} ·{" "}
+                  {emPalavras(quantosDias(proxima.data))}
                 </div>
                 <h2 className="proxima__titulo">{proxima.titulo}</h2>
-                {proxima.topico && <p className="aula__topico">{proxima.topico}</p>}
-                {proxima.descricao && <p className="aula__descricao">{proxima.descricao}</p>}
+                {proxima.topico && (
+                  <p className="aula__topico">{proxima.topico}</p>
+                )}
+                {proxima.descricao && (
+                  <p className="aula__descricao">{proxima.descricao}</p>
+                )}
                 <DetalheProxima aula={proxima} />
                 {aulaDoConvite && (
                   <div style={{ marginTop: "var(--space-3)" }}>
@@ -65,14 +81,24 @@ export default function Pagina() {
 
           <section className="assinar">
             <p className="assinar__texto">
-              <strong>Leve o calendário no celular.</strong> Assine a agenda da escola e as aulas
-              aparecem sozinhas no seu telefone, com lembrete e tudo — se uma data mudar, muda lá
-              também.
+              <strong>Leve o calendário no celular.</strong> Assine a agenda da
+              escola e as aulas aparecem sozinhas no seu telefone, com lembrete
+              e tudo — se uma data mudar, muda lá também.
             </p>
-            <a className="botao" href={AGENDA_GOOGLE} target="_blank" rel="noreferrer">
+            <a
+              className="botao"
+              href={AGENDA_GOOGLE}
+              target="_blank"
+              rel="noreferrer"
+            >
               Adicionar ao Google Agenda
             </a>
-            <a className="botao botao--fantasma" href={AGENDA_ICS} target="_blank" rel="noreferrer">
+            <a
+              className="botao botao--fantasma"
+              href={AGENDA_ICS}
+              target="_blank"
+              rel="noreferrer"
+            >
               Outro app (.ics)
             </a>
           </section>
@@ -82,8 +108,9 @@ export default function Pagina() {
 
         <footer className="rodape">
           <p>
-            {pelaFrente.length} encontros pela frente, {horas.toFixed(0)}h de formação.
-            Calendário sujeito a mudanças — confirme com a equipe da escola.
+            {pelaFrente.length} encontros pela frente, {horas.toFixed(0)}h de
+            formação. Calendário sujeito a mudanças — confirme com a equipe da
+            escola.
           </p>
         </footer>
       </main>

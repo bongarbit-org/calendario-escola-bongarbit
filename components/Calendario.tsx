@@ -1,11 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  calendario, dia, emPalavras, horasDe, mesCurto, quantosDias, type Aula,
-} from "@/lib/calendario";
-import { IndicadorHorario } from "@/components/IndicadorHorario";
 import { BotaoVisualizarConvite } from "@/components/ConviteDoDia";
+import { IndicadorHorario } from "@/components/IndicadorHorario";
+import {
+  type Aula,
+  calendario,
+  dia,
+  emPalavras,
+  horasDe,
+  mesCurto,
+  quantosDias,
+} from "@/lib/calendario";
 import { temConvite } from "@/lib/card";
 
 const SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -15,7 +21,8 @@ function grade(chave: string, itens: Aula[]) {
   const [ano, mes] = chave.split("-").map(Number);
   const antes = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay();
   const quantos = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
-  const celulas: ({ data: string; itens: Aula[] } | null)[] = Array(antes).fill(null);
+  const celulas: ({ data: string; itens: Aula[] } | null)[] =
+    Array(antes).fill(null);
   for (let d = 1; d <= quantos; d++) {
     const data = `${chave}-${String(d).padStart(2, "0")}`;
     celulas.push({ data, itens: itens.filter((a) => a.data === data) });
@@ -37,7 +44,7 @@ export function Calendario({ hoje }: { hoje: string }) {
         itens: m.itens.filter(
           (a) =>
             (!trilha || a.trilha === trilha) &&
-            (mostrarPassadas || a.data >= hoje)
+            (mostrarPassadas || a.data >= hoje),
         ),
       }))
       .filter((m) => m.itens.length > 0);
@@ -47,18 +54,24 @@ export function Calendario({ hoje }: { hoje: string }) {
   const mesesDaGrade = useMemo(
     () =>
       calendario.meses
-        .map((m) => ({ ...m, itens: m.itens.filter((a) => !trilha || a.trilha === trilha) }))
+        .map((m) => ({
+          ...m,
+          itens: m.itens.filter((a) => !trilha || a.trilha === trilha),
+        }))
         .filter((m) => m.itens.length > 0)
         .filter((m) => mostrarPassadas || m.chave >= hoje.slice(0, 7)),
-    [trilha, mostrarPassadas, hoje]
+    [trilha, mostrarPassadas, hoje],
   );
 
   const contagem = (nome: string) =>
     calendario.meses
       .flatMap((m) => m.itens)
-      .filter((a) => a.trilha === nome && (mostrarPassadas || a.data >= hoje)).length;
+      .filter((a) => a.trilha === nome && (mostrarPassadas || a.data >= hoje))
+      .length;
 
-  const passadas = calendario.meses.flatMap((m) => m.itens).filter((a) => a.data < hoje).length;
+  const passadas = calendario.meses
+    .flatMap((m) => m.itens)
+    .filter((a) => a.data < hoje).length;
 
   return (
     <>
@@ -107,7 +120,9 @@ export function Calendario({ hoje }: { hoje: string }) {
             className="botao botao--fantasma"
             style={{ marginLeft: "auto" }}
           >
-            {mostrarPassadas ? "Esconder o que passou" : `Mostrar o que passou (${passadas})`}
+            {mostrarPassadas
+              ? "Esconder o que passou"
+              : `Mostrar o que passou (${passadas})`}
           </button>
         )}
       </div>
@@ -119,10 +134,13 @@ export function Calendario({ hoje }: { hoje: string }) {
               {mes.nome}
               <span>
                 {mes.itens.filter((a) => !a.semAula).length}{" "}
-                {mes.itens.filter((a) => !a.semAula).length === 1 ? "encontro" : "encontros"}
+                {mes.itens.filter((a) => !a.semAula).length === 1
+                  ? "encontro"
+                  : "encontros"}
               </span>
             </h2>
 
+            {/* Grade de calendário, não planilha: nem toda célula é navegável por teclado de propósito (ver override em biome.json). */}
             <div className="grade" role="grid" aria-label={mes.nome}>
               {SEMANA.map((d) => (
                 <div className="grade__peso" key={d} role="columnheader">
@@ -131,6 +149,7 @@ export function Calendario({ hoje }: { hoje: string }) {
               ))}
               {grade(mes.chave, mes.itens).map((celula, i) =>
                 celula === null ? (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: layout fixo por mês, célula vazia não tem outra identidade.
                   <div className="grade__vazio" key={`v${i}`} role="gridcell" />
                 ) : (
                   <Celula
@@ -139,9 +158,11 @@ export function Calendario({ hoje }: { hoje: string }) {
                     itens={celula.itens}
                     hoje={hoje}
                     aberto={aberto === celula.data}
-                    aoAbrir={() => setAberto(aberto === celula.data ? null : celula.data)}
+                    aoAbrir={() =>
+                      setAberto(aberto === celula.data ? null : celula.data)
+                    }
                   />
-                )
+                ),
               )}
             </div>
 
@@ -150,7 +171,11 @@ export function Calendario({ hoje }: { hoje: string }) {
                 {mes.itens
                   .filter((a) => a.data === aberto)
                   .map((aula) => (
-                    <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
+                    <LinhaDaAula
+                      key={aula.data + aula.titulo}
+                      aula={aula}
+                      hoje={hoje}
+                    />
                   ))}
               </ul>
             )}
@@ -159,22 +184,28 @@ export function Calendario({ hoje }: { hoje: string }) {
 
       {vista === "lista" &&
         meses.map((mes) => (
-        <section className="mes" key={mes.chave}>
-          <h2 className="mes__titulo">
-            {mes.nome}
-            <span>
-              {mes.itens.filter((a) => !a.semAula).length}{" "}
-              {mes.itens.filter((a) => !a.semAula).length === 1 ? "encontro" : "encontros"}
-            </span>
-          </h2>
+          <section className="mes" key={mes.chave}>
+            <h2 className="mes__titulo">
+              {mes.nome}
+              <span>
+                {mes.itens.filter((a) => !a.semAula).length}{" "}
+                {mes.itens.filter((a) => !a.semAula).length === 1
+                  ? "encontro"
+                  : "encontros"}
+              </span>
+            </h2>
 
-          <ul>
-            {mes.itens.map((aula) => (
-              <LinhaDaAula key={aula.data + aula.titulo} aula={aula} hoje={hoje} />
-            ))}
-          </ul>
-        </section>
-      ))}
+            <ul>
+              {mes.itens.map((aula) => (
+                <LinhaDaAula
+                  key={aula.data + aula.titulo}
+                  aula={aula}
+                  hoje={hoje}
+                />
+              ))}
+            </ul>
+          </section>
+        ))}
 
       {((vista === "lista" && meses.length === 0) ||
         (vista === "grade" && mesesDaGrade.length === 0)) && (
@@ -232,21 +263,37 @@ function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
             className="etiqueta"
             style={{
               background: aula.cor,
-              color: aula.trilha === "Trilha Empreendedora" ? "var(--preto-grafite)" : "var(--papel)",
+              color:
+                aula.trilha === "Trilha Empreendedora"
+                  ? "var(--preto-grafite)"
+                  : "var(--papel)",
             }}
           >
             {aula.trilha}
           </span>
         )}
-        {aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>}
+        {aula.horas && (
+          <span className="aula__detalhe">{horasDe(aula.horas)}</span>
+        )}
         {/* Horário real, à parte da carga horária — nunca a substitui. */}
         <IndicadorHorario aula={aula} />
         {/* Local num dia sem aula só confunde — não há aonde ir. */}
-        {aula.local && !aula.semAula && <span className="aula__detalhe">{aula.local}</span>}
-        {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}
+        {aula.local && !aula.semAula && (
+          <span className="aula__detalhe">{aula.local}</span>
+        )}
+        {ehHoje && (
+          <span
+            className="aula__detalhe"
+            style={{ color: "var(--terracota-queimada)" }}
+          >
+            hoje
+          </span>
+        )}
         {ehHoje && temConvite(aula) && <BotaoVisualizarConvite />}
         {!passada && !ehHoje && (
-          <span className="aula__detalhe">{emPalavras(quantosDias(aula.data, hoje))}</span>
+          <span className="aula__detalhe">
+            {emPalavras(quantosDias(aula.data, hoje))}
+          </span>
         )}
       </div>
     </li>
@@ -255,7 +302,11 @@ function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
 
 /** Um dia na grade. Sem encontro é só o número; com encontro, vira botão. */
 function Celula({
-  data, itens, hoje, aberto, aoAbrir,
+  data,
+  itens,
+  hoje,
+  aberto,
+  aoAbrir,
 }: {
   data: string;
   itens: Aula[];

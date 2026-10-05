@@ -23,7 +23,8 @@ export const calendario = {
   trilhas: dados.trilhas as { nome: string; cor: string }[],
 };
 
-export const todasAsAulas = (): Aula[] => calendario.meses.flatMap((m) => m.itens);
+export const todasAsAulas = (): Aula[] =>
+  calendario.meses.flatMap((m) => m.itens);
 
 const FUSO = "America/Recife";
 
@@ -31,20 +32,38 @@ const FUSO = "America/Recife";
 export function hoje(): string {
   // Só para os testes e2e: sem isto, "hoje" muda todo dia e o teste não tem como
   // escolher uma data previsível. Nunca é lido a partir de requisição do navegador.
-  if (process.env.CALENDARIO_HOJE_TESTE) return process.env.CALENDARIO_HOJE_TESTE;
+  if (process.env.CALENDARIO_HOJE_TESTE)
+    return process.env.CALENDARIO_HOJE_TESTE;
   const p = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: FUSO, year: "numeric", month: "2-digit", day: "2-digit",
+    timeZone: FUSO,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).formatToParts(new Date());
+  // biome-ignore lint/style/noNonNullAssertion: Intl.DateTimeFormat com year/month/day sempre devolve essas partes.
   const v = (t: string) => p.find((x) => x.type === t)!.value;
   return `${v("year")}-${v("month")}-${v("day")}`;
 }
 
 export const dia = (data: string) => Number(data.slice(8, 10));
 
-const MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun",
-                      "jul", "ago", "set", "out", "nov", "dez"];
+const MESES_CURTOS = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
 
-export const mesCurto = (data: string) => MESES_CURTOS[Number(data.slice(5, 7)) - 1];
+export const mesCurto = (data: string) =>
+  MESES_CURTOS[Number(data.slice(5, 7)) - 1];
 
 /** A próxima atividade a partir de hoje, ignorando os dias sem aula. */
 export function proximaAula(): Aula | undefined {
@@ -61,7 +80,8 @@ export function quantosDias(data: string, hojeStr: string = hoje()): number {
   const [a1, m1, d1] = hojeStr.split("-").map(Number);
   const [a2, m2, d2] = data.split("-").map(Number);
   return Math.round(
-    (new Date(a2, m2 - 1, d2).getTime() - new Date(a1, m1 - 1, d1).getTime()) / 86400000
+    (new Date(a2, m2 - 1, d2).getTime() - new Date(a1, m1 - 1, d1).getTime()) /
+      86400000,
   );
 }
 
@@ -75,4 +95,8 @@ export function emPalavras(dias: number): string {
 }
 
 export const horasDe = (n: number | null) =>
-  n === null ? null : Number.isInteger(n) ? `${n}h` : `${n.toString().replace(".", ",")}h`;
+  n === null
+    ? null
+    : Number.isInteger(n)
+      ? `${n}h`
+      : `${n.toString().replace(".", ",")}h`;

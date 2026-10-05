@@ -1,18 +1,41 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Aula } from "@/lib/calendario";
 import {
-  sedeDoLocal, nomeCompletoDaSede, saudacaoPorHora, diaDataDeAula,
-  extrairInstrumento, extrairNumeroDaAula, tituloSemSufixoAula, stripPrefixoProf,
-  ordinalPT, esc, negrito, tarjaCacgb, tarjaFablab,
-  linha2Variantes, linha3Variantes, linha4Variantes, escolherIndice, escolherIndiceDiferente,
+  diaDataDeAula,
+  esc,
+  escolherIndice,
+  escolherIndiceDiferente,
+  extrairInstrumento,
+  extrairNumeroDaAula,
+  linha2Variantes,
+  linha3Variantes,
+  linha4Variantes,
+  negrito,
+  nomeCompletoDaSede,
+  ordinalPT,
+  saudacaoPorHora,
+  sedeDoLocal,
+  stripPrefixoProf,
+  tarjaCacgb,
+  tarjaFablab,
+  tituloSemSufixoAula,
 } from "@/lib/card";
 
 function aula(overrides: Partial<Aula>): Aula {
   return {
-    data: "2026-09-30", diaDaSemana: "Qua", titulo: "Luteria do Berimbau - Aula 3",
-    descricao: null, topico: null, trilha: "Luteria Orgânica", cor: "var(--verde-baoba)",
-    horas: 3, local: "CACGB", equipe: "prof. Ninho Brown Xambá", modulo: "Módulo 2",
-    semAula: false, ...overrides,
+    data: "2026-09-30",
+    diaDaSemana: "Qua",
+    titulo: "Luteria do Berimbau - Aula 3",
+    descricao: null,
+    topico: null,
+    trilha: "Luteria Orgânica",
+    cor: "var(--verde-baoba)",
+    horas: 3,
+    local: "CACGB",
+    equipe: "prof. Ninho Brown Xambá",
+    modulo: "Módulo 2",
+    semAula: false,
+    ...overrides,
   };
 }
 
@@ -33,7 +56,9 @@ describe("sedeDoLocal", () => {
 
 describe("nomeCompletoDaSede", () => {
   it("devolve o nome completo de cada sede", () => {
-    expect(nomeCompletoDaSede("cacgb")).toBe("Centro de Arte e Cultura Grupo Bongar");
+    expect(nomeCompletoDaSede("cacgb")).toBe(
+      "Centro de Arte e Cultura Grupo Bongar",
+    );
     expect(nomeCompletoDaSede("fablab")).toBe("Fab Lab Rec");
   });
 });
@@ -61,23 +86,33 @@ describe("extrairInstrumento / extrairNumeroDaAula", () => {
   it("extrai instrumento e número de títulos de luteria", () => {
     expect(extrairInstrumento("Luteria do Berimbau - Aula 1")).toBe("Berimbau");
     expect(extrairNumeroDaAula("Luteria do Berimbau - Aula 1")).toBe(1);
-    expect(extrairInstrumento("Luteria do Tambor Falante (Tama) - Aula 2")).toBe("Tambor Falante (Tama)");
-    expect(extrairNumeroDaAula("Luteria do Tambor Falante (Tama) - Aula 2")).toBe(2);
+    expect(
+      extrairInstrumento("Luteria do Tambor Falante (Tama) - Aula 2"),
+    ).toBe("Tambor Falante (Tama)");
+    expect(
+      extrairNumeroDaAula("Luteria do Tambor Falante (Tama) - Aula 2"),
+    ).toBe(2);
   });
   it("devolve null para títulos que não seguem o padrão", () => {
     expect(extrairInstrumento("Café com Bongarbit (3)")).toBeNull();
     expect(extrairNumeroDaAula("Café com Bongarbit (3)")).toBeNull();
-    expect(extrairInstrumento("Encontro da Trilha de Educação Empreendedora (3)")).toBeNull();
+    expect(
+      extrairInstrumento("Encontro da Trilha de Educação Empreendedora (3)"),
+    ).toBeNull();
     expect(extrairInstrumento("Luteria Digital")).toBeNull();
   });
 });
 
 describe("tituloSemSufixoAula", () => {
   it("remove o sufixo de aula quando presente", () => {
-    expect(tituloSemSufixoAula("Luteria do Berimbau - Aula 1")).toBe("Luteria do Berimbau");
+    expect(tituloSemSufixoAula("Luteria do Berimbau - Aula 1")).toBe(
+      "Luteria do Berimbau",
+    );
   });
   it("devolve o título sem mudança quando não há sufixo", () => {
-    expect(tituloSemSufixoAula("Café com Bongarbit (3)")).toBe("Café com Bongarbit (3)");
+    expect(tituloSemSufixoAula("Café com Bongarbit (3)")).toBe(
+      "Café com Bongarbit (3)",
+    );
     expect(tituloSemSufixoAula("Vivência na Mata")).toBe("Vivência na Mata");
   });
 });
@@ -85,11 +120,15 @@ describe("tituloSemSufixoAula", () => {
 describe("stripPrefixoProf", () => {
   it("remove o prefixo prof.", () => {
     expect(stripPrefixoProf("prof. Bolinho")).toBe("Bolinho");
-    expect(stripPrefixoProf("prof. Ninho Brown Xambá")).toBe("Ninho Brown Xambá");
+    expect(stripPrefixoProf("prof. Ninho Brown Xambá")).toBe(
+      "Ninho Brown Xambá",
+    );
   });
   it("não mexe em equipes sem o prefixo", () => {
     expect(stripPrefixoProf("Equipe Fab Lab Rec")).toBe("Equipe Fab Lab Rec");
-    expect(stripPrefixoProf("João, Thúlio, Educadores e Monitores")).toBe("João, Thúlio, Educadores e Monitores");
+    expect(stripPrefixoProf("João, Thúlio, Educadores e Monitores")).toBe(
+      "João, Thúlio, Educadores e Monitores",
+    );
   });
   it("passa null adiante", () => {
     expect(stripPrefixoProf(null)).toBeNull();
@@ -109,25 +148,35 @@ describe("ordinalPT", () => {
 
 describe("esc / negrito", () => {
   it("escapa & < >", () => {
-    expect(esc("<script>a & b</script>")).toBe("&lt;script&gt;a &amp; b&lt;/script&gt;");
+    expect(esc("<script>a & b</script>")).toBe(
+      "&lt;script&gt;a &amp; b&lt;/script&gt;",
+    );
   });
   it("troca **texto** por <b>texto</b> depois de escapar", () => {
     expect(negrito("o **Berimbau** de hoje")).toBe("o <b>Berimbau</b> de hoje");
   });
   it("deixa ** sem par como está, sem quebrar", () => {
-    expect(negrito("preço: R$ 10 ** promoção")).toBe("preço: R$ 10 ** promoção");
+    expect(negrito("preço: R$ 10 ** promoção")).toBe(
+      "preço: R$ 10 ** promoção",
+    );
   });
 });
 
 describe("tarjaCacgb / tarjaFablab", () => {
   it("monta a tarja cacgb em HTML, com <br> entre data e horário", () => {
-    expect(tarjaCacgb("Hoje", "quarta, 30/9", "18h às 21h")).toBe("Hoje · quarta, 30/9<br>18h às 21h");
+    expect(tarjaCacgb("Hoje", "quarta, 30/9", "18h às 21h")).toBe(
+      "Hoje · quarta, 30/9<br>18h às 21h",
+    );
   });
   it("monta a tarja fablab em texto puro, tudo na mesma linha", () => {
-    expect(tarjaFablab("Hoje", "quarta, 30/9", "18h às 21h")).toBe("Hoje · quarta, 30/9 · 18h às 21h");
+    expect(tarjaFablab("Hoje", "quarta, 30/9", "18h às 21h")).toBe(
+      "Hoje · quarta, 30/9 · 18h às 21h",
+    );
   });
   it("omite o prefixo quando vazio", () => {
-    expect(tarjaCacgb("", "quarta, 30/9", "18h às 21h")).toBe("quarta, 30/9<br>18h às 21h");
+    expect(tarjaCacgb("", "quarta, 30/9", "18h às 21h")).toBe(
+      "quarta, 30/9<br>18h às 21h",
+    );
   });
 });
 
@@ -148,7 +197,9 @@ describe("linha3Variantes", () => {
     }
   });
   it("cai no título sem sufixo quando não é luteria", () => {
-    for (const v of linha3Variantes(aula({ titulo: "Vivência na Mata", equipe: null }))) {
+    for (const v of linha3Variantes(
+      aula({ titulo: "Vivência na Mata", equipe: null }),
+    )) {
       expect(v).toContain("Vivência na Mata");
       expect(v).not.toContain(", com **");
     }

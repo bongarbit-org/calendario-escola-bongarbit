@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const buscarHorarios = vi.fn();
-vi.mock("@/lib/agenda", () => ({ buscarHorarios, AGENDA_ICS: "https://exemplo/agenda.ics" }));
+vi.mock("@/lib/agenda", () => ({
+  buscarHorarios,
+  AGENDA_ICS: "https://exemplo/agenda.ics",
+}));
 
 describe("GET /api/horarios", () => {
   it("devolve 200 com o objeto de horários quando a busca funciona", async () => {

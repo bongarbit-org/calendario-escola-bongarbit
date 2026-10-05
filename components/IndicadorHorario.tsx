@@ -14,7 +14,11 @@ export function IndicadorHorario({ aula }: { aula: Aula }) {
 
   if (estado.status === "carregando") {
     return (
-      <span className="aula__detalhe aula__detalhe--carregando" aria-label="Carregando horário real">
+      <span
+        className="aula__detalhe aula__detalhe--carregando"
+        role="img"
+        aria-label="Carregando horário real"
+      >
         ···
       </span>
     );
