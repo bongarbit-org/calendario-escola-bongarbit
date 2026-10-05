@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext, useContext, useEffect, useMemo, useRef, useState,
+  type ReactNode, type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 import type { Aula } from "@/lib/calendario";
 import {
@@ -11,6 +14,19 @@ import {
 import styles from "./CardDoDia.module.css";
 
 const HORARIO_PADRAO = "18h às 21h";
+
+// Quantos convites ficam prontos à frente, num cantinho invisível da página,
+// enquanto o usuário nem clicou em nada ainda. "Visualizar convite" e "Gerar
+// novamente" tiram do topo dessa fila — só caem no caminho lento (gerando ao
+// vivo, com "Gerando o card…") se a fila ainda estiver vazia.
+const CAPACIDADE_FILA = 3;
+
+type ItemGerado = {
+  url: string;
+  indiceLinha2: number;
+  indiceLinha3: number;
+  indiceLinha4: number;
+};
 
 // Espera a imagem terminar de carregar de verdade — não só o fetch, mas a
 // decodificação — antes de deixar o snapdom capturar o cartão. Sem isso, num
@@ -26,9 +42,119 @@ function aguardarImagem(img: HTMLImageElement): Promise<void> {
   });
 }
 
-export function CardDoDia({ aula }: { aula: Aula }) {
+// Agenda para quando o browser estiver ocioso — sem isso, gerar os 3 convites
+// da fila de uma vez travaria a página (cada captura do snapdom roda na
+// thread principal, porque precisa do DOM de verdade). `requestIdleCallback`
+// não existe no Safari nem no jsdom dos testes, daí o fallback com setTimeout.
+function agendarOcioso(fn: () => void): number {
+  if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+    return window.requestIdleCallback(fn);
+  }
+  return window.setTimeout(fn, 200);
+}
+
+function cancelarOcioso(id: number) {
+  if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+    window.cancelIdleCallback(id);
+  } else {
+    window.clearTimeout(id);
+  }
+}
+
+// Cacheado num só lugar: a fila (em segundo plano) e a captura em primeiro
+// plano podem disparar a primeira captura quase ao mesmo tempo, e dois
+// `import("@zumer/snapdom")` concorrentes e "frios" acabavam, nos testes,
+// escapando do mock e caindo no módulo de verdade (que não funciona no jsdom).
+let snapdomPromise: Promise<typeof import("@zumer/snapdom")> | null = null;
+
+async function capturarCartao(el: HTMLDivElement): Promise<string> {
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await Promise.all(Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img)));
+  if (!snapdomPromise) snapdomPromise = import("@zumer/snapdom");
+  const { snapdom } = await snapdomPromise;
+  const img = await snapdom.toPng(el, { scale: 2, embedFonts: false });
+  return img.src;
+}
+
+function Cartao({
+  cardRef, sede, aula, horario, saudacao, linha2, linha3, linha4,
+}: {
+  cardRef: RefObject<HTMLDivElement | null>;
+  sede: Sede;
+  aula: Aula;
+  horario: string;
+  saudacao: "Bom dia!" | "Boa tarde!";
+  linha2: string;
+  linha3: string;
+  linha4: string;
+}) {
+  const prefixo = "Hoje";
+  const diaData = useMemo(() => diaDataDeAula(aula.data), [aula.data]);
+
+  return (
+    <div
+      ref={cardRef}
+      aria-hidden="true"
+      className={`${styles.cartao} ${sede === "cacgb" ? styles.cacgb : styles.fablab}`}
+    >
+      {sede === "cacgb" ? (
+        <>
+          <img className={styles.marca} src="/img/cartao/bongarbit-lockup-horizontal.png" alt="" />
+          <div
+            className={styles.tarja}
+            dangerouslySetInnerHTML={{ __html: tarjaCacgb(prefixo, diaData, horario) }}
+          />
+          <div className={styles.msg}>
+            <span className={styles.hi}>{saudacao}</span>
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha2) }} />
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha3) }} />
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
+          </div>
+          <img className={styles.vila} src="/img/cartao/faixa-vila.png" alt="" />
+        </>
+      ) : (
+        <>
+          <img className={styles.marca} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
+          <div className={styles.tarja}>{tarjaFablab(prefixo, diaData, horario)}</div>
+          <div className={styles.msg}>
+            <span className={styles.hi}>{saudacao}</span>
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha2) }} />
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha3) }} />
+            <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
+          </div>
+          <div className={styles.rodape}>
+            <img className={styles.rodapeBong} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
+            <img className={styles.rodapeFab} src="/img/cartao/fablab-rec-empilhado-branco.png" alt="" />
+          </div>
+        </>
+      )}
+      <img className={styles.borda} src="/img/cartao/borda-instagram.png" alt="" />
+    </div>
+  );
+}
+
+// Única fonte de verdade para o convite do dia: o provider roda uma vez (montado
+// perto da raiz da página), começa a preparar a fila assim que existe, e guarda
+// o estado do modal. Qualquer botão na página — o destaque "Próximo encontro" ou
+// a linha de hoje no calendário — só chama `abrir()` por contexto; nenhum deles
+// sabe (nem precisa saber) que existe uma fila por trás.
+const ConviteContext = createContext<(() => void) | null>(null);
+
+export function BotaoVisualizarConvite() {
+  const abrir = useContext(ConviteContext);
+  if (!abrir) throw new Error("BotaoVisualizarConvite precisa estar dentro de ConviteDoDiaProvider");
+  return (
+    <button type="button" className="botao botao--mini" onClick={abrir}>
+      Visualizar convite
+    </button>
+  );
+}
+
+export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; children: ReactNode }) {
+  const sedeFixa = useMemo(() => (aula ? sedeDoLocal(aula.local) : "cacgb"), [aula]);
+
   const [aberto, setAberto] = useState(false);
-  const [sede, setSede] = useState<Sede>("cacgb");
+  const [sede, setSede] = useState<Sede>(sedeFixa);
   const [saudacao, setSaudacao] = useState<"Bom dia!" | "Boa tarde!">("Bom dia!");
   const [horario, setHorario] = useState(HORARIO_PADRAO);
   const [editandoHorario, setEditandoHorario] = useState(false);
@@ -41,28 +167,45 @@ export function CardDoDia({ aula }: { aula: Aula }) {
   const [geradoUrl, setGeradoUrl] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
+  // A pilha de convites prontos. `filaRef` é a fonte de verdade (lida e
+  // mutada de forma síncrona por abrir()/gerarNovamente()); `tamanhoFila`
+  // só existe para disparar o efeito que repõe a fila até CAPACIDADE_FILA.
+  const filaRef = useRef<ItemGerado[]>([]);
+  const [tamanhoFila, setTamanhoFila] = useState(0);
+  const ultimoFilaRef = useRef({ l2: -1, l3: -1, l4: -1 });
+  const [filaDraft, setFilaDraft] = useState({ l2: 0, l3: 0, l4: 0, saudacao: "Bom dia!" as "Bom dia!" | "Boa tarde!" });
+
   const cardRef = useRef<HTMLDivElement>(null);
+  const cardRefFila = useRef<HTMLDivElement>(null);
 
-  const prefixo = "Hoje";
-  const diaData = useMemo(() => diaDataDeAula(aula.data), [aula.data]);
-
-  const linha2 = linha2Variantes(sede, horario)[indiceLinha2];
-  const linha3 = linha3Variantes(aula)[indiceLinha3];
+  const linha2 = aula ? linha2Variantes(sede, horario)[indiceLinha2] : "";
+  const linha3 = aula ? linha3Variantes(aula)[indiceLinha3] : "";
   const linha4 = linha4Variantes()[indiceLinha4];
 
   function abrir() {
-    const sedeDeAgora = sedeDoLocal(aula.local);
-    setSede(sedeDeAgora);
+    if (!aula) return;
+    setEditandoHorario(false);
+    setErro(null);
+    setSede(sedeFixa);
     setSaudacao(saudacaoPorHora(new Date().getHours()));
     setHorario(HORARIO_PADRAO);
-    setEditandoHorario(false);
-    setIndiceLinha2(escolherIndice(linha2Variantes(sedeDeAgora, HORARIO_PADRAO).length));
-    setIndiceLinha3(escolherIndice(linha3Variantes(aula).length));
-    setIndiceLinha4(escolherIndice(linha4Variantes().length));
-    setErro(null);
-    setGeradoUrl(null);
     setAberto(true);
-    setCapturaPendente((n) => n + 1);
+
+    const item = filaRef.current.shift();
+    if (item) {
+      setIndiceLinha2(item.indiceLinha2);
+      setIndiceLinha3(item.indiceLinha3);
+      setIndiceLinha4(item.indiceLinha4);
+      setGeradoUrl(item.url);
+      setExportando(false);
+      setTamanhoFila(filaRef.current.length);
+    } else {
+      setIndiceLinha2(escolherIndice(linha2Variantes(sedeFixa, HORARIO_PADRAO).length));
+      setIndiceLinha3(escolherIndice(linha3Variantes(aula).length));
+      setIndiceLinha4(escolherIndice(linha4Variantes().length));
+      setGeradoUrl(null);
+      setCapturaPendente((n) => n + 1);
+    }
   }
 
   function fechar() {
@@ -73,11 +216,24 @@ export function CardDoDia({ aula }: { aula: Aula }) {
 
   // Troca as três linhas para variantes diferentes das atuais — nunca sorteia
   // de volta a mesma frase, senão "gerar novamente" às vezes pareceria não ter feito nada.
+  // Quando o horário não foi alterado, a troca sai instantânea da fila; só cai no
+  // caminho lento (gerar ao vivo) se a fila estiver vazia ou o horário tiver sido editado
+  // (a fila só pré-gera para o horário padrão).
   function gerarNovamente() {
-    setIndiceLinha2((i) => escolherIndiceDiferente(linha2Variantes(sede, horario).length, i));
-    setIndiceLinha3((i) => escolherIndiceDiferente(linha3Variantes(aula).length, i));
-    setIndiceLinha4((i) => escolherIndiceDiferente(linha4Variantes().length, i));
-    setCapturaPendente((n) => n + 1);
+    if (!aula) return;
+    const item = horario === HORARIO_PADRAO ? filaRef.current.shift() : undefined;
+    if (item) {
+      setIndiceLinha2(item.indiceLinha2);
+      setIndiceLinha3(item.indiceLinha3);
+      setIndiceLinha4(item.indiceLinha4);
+      setGeradoUrl(item.url);
+      setTamanhoFila(filaRef.current.length);
+    } else {
+      setIndiceLinha2((i) => escolherIndiceDiferente(linha2Variantes(sede, horario).length, i));
+      setIndiceLinha3((i) => escolherIndiceDiferente(linha3Variantes(aula).length, i));
+      setIndiceLinha4((i) => escolherIndiceDiferente(linha4Variantes().length, i));
+      setCapturaPendente((n) => n + 1);
+    }
   }
 
   function aplicarHorario() {
@@ -87,8 +243,15 @@ export function CardDoDia({ aula }: { aula: Aula }) {
   }
 
   // Captura o cartão depois que o React já commitou o texto/sede/horário atuais no DOM.
+  // Reabrir com um item da fila também muda `aberto` (false -> true) sem tocar em
+  // `capturaPendente` — isso por si só já dispara de novo este efeito (ele depende de
+  // `aberto`), e sem o controle abaixo capturaria de novo por cima do que a fila
+  // acabou de entregar. `ultimoCapturaPendenteRef` garante que só captura quando
+  // `capturaPendente` é realmente um valor novo, não só porque o efeito rodou de novo.
+  const ultimoCapturaPendenteRef = useRef(0);
   useEffect(() => {
-    if (!aberto || capturaPendente === 0) return;
+    if (!aberto || capturaPendente === 0 || capturaPendente === ultimoCapturaPendenteRef.current) return;
+    ultimoCapturaPendenteRef.current = capturaPendente;
     let cancelado = false;
 
     async function capturar() {
@@ -96,17 +259,12 @@ export function CardDoDia({ aula }: { aula: Aula }) {
       if (!el) return;
       setExportando(true);
       setErro(null);
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      await Promise.all(
-        Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img))
-      );
       try {
-        const { snapdom } = await import("@zumer/snapdom");
-        const img = await snapdom.toPng(el, { scale: 2, embedFonts: false });
-        if (!cancelado) setGeradoUrl(img.src);
+        const url = await capturarCartao(el);
+        if (!cancelado) setGeradoUrl(url);
       } catch (err) {
         console.error(err);
-        if (!cancelado) setErro("Deu erro ao gerar a imagem — olha o console.");
+        if (!cancelado) setErro("Erro ao gerar imagem.");
       } finally {
         if (!cancelado) setExportando(false);
       }
@@ -119,11 +277,55 @@ export function CardDoDia({ aula }: { aula: Aula }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aberto, capturaPendente]);
 
+  // Repõe a fila em segundo plano, um convite por vez, sempre que ela cai abaixo
+  // da capacidade — inclusive assim que a página carrega, antes de qualquer clique
+  // em qualquer botão. Roda uma única vez (o provider é montado uma vez só, perto
+  // da raiz da página), então qualquer botão que apareça depois já encontra a fila
+  // sendo preenchida ou pronta. `agendarOcioso` cede a thread principal entre uma
+  // captura e outra, para o usuário não sentir a página travar enquanto isso roda.
+  useEffect(() => {
+    if (!aula || tamanhoFila >= CAPACIDADE_FILA) return;
+    let cancelado = false;
+    let idleId: number;
+
+    function tentar(tentativas: number) {
+      idleId = agendarOcioso(() => {
+        gerarItemFila()
+          .then((item) => {
+            if (cancelado) return;
+            ultimoFilaRef.current = { l2: item.indiceLinha2, l3: item.indiceLinha3, l4: item.indiceLinha4 };
+            filaRef.current.push(item);
+            setTamanhoFila(filaRef.current.length);
+          })
+          .catch((err) => {
+            console.error(err);
+            if (!cancelado && tentativas < 3) tentar(tentativas + 1);
+          });
+      });
+    }
+
+    async function gerarItemFila(): Promise<ItemGerado> {
+      const l2 = escolherIndiceDiferente(linha2Variantes(sedeFixa, HORARIO_PADRAO).length, ultimoFilaRef.current.l2);
+      const l3 = escolherIndiceDiferente(linha3Variantes(aula!).length, ultimoFilaRef.current.l3);
+      const l4 = escolherIndiceDiferente(linha4Variantes().length, ultimoFilaRef.current.l4);
+      setFilaDraft({ l2, l3, l4, saudacao: saudacaoPorHora(new Date().getHours()) });
+      const el = cardRefFila.current;
+      if (!el) throw new Error("cartão da fila sem DOM");
+      const url = await capturarCartao(el);
+      return { url, indiceLinha2: l2, indiceLinha3: l3, indiceLinha4: l4 };
+    }
+
+    tentar(0);
+    return () => {
+      cancelado = true;
+      cancelarOcioso(idleId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tamanhoFila, sedeFixa, aula]);
+
   return (
-    <>
-      <button type="button" className="botao botao--mini" onClick={abrir}>
-        Visualizar convite
-      </button>
+    <ConviteContext.Provider value={abrir}>
+      {children}
 
       {aberto &&
         createPortal(
@@ -197,42 +399,31 @@ export function CardDoDia({ aula }: { aula: Aula }) {
           document.body
         )}
 
-      {aberto && (
-        <div ref={cardRef} className={`${styles.cartao} ${sede === "cacgb" ? styles.cacgb : styles.fablab}`}>
-          {sede === "cacgb" ? (
-            <>
-              <img className={styles.marca} src="/img/cartao/bongarbit-lockup-horizontal.png" alt="" />
-              <div
-                className={styles.tarja}
-                dangerouslySetInnerHTML={{ __html: tarjaCacgb(prefixo, diaData, horario) }}
-              />
-              <div className={styles.msg}>
-                <span className={styles.hi}>{saudacao}</span>
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha2) }} />
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha3) }} />
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
-              </div>
-              <img className={styles.vila} src="/img/cartao/faixa-vila.png" alt="" />
-            </>
-          ) : (
-            <>
-              <img className={styles.marca} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
-              <div className={styles.tarja}>{tarjaFablab(prefixo, diaData, horario)}</div>
-              <div className={styles.msg}>
-                <span className={styles.hi}>{saudacao}</span>
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha2) }} />
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha3) }} />
-                <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
-              </div>
-              <div className={styles.rodape}>
-                <img className={styles.rodapeBong} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
-                <img className={styles.rodapeFab} src="/img/cartao/fablab-rec-empilhado-branco.png" alt="" />
-              </div>
-            </>
-          )}
-          <img className={styles.borda} src="/img/cartao/borda-instagram.png" alt="" />
-        </div>
+      {aberto && aula && (
+        <Cartao
+          cardRef={cardRef}
+          sede={sede}
+          aula={aula}
+          horario={horario}
+          saudacao={saudacao}
+          linha2={linha2}
+          linha3={linha3}
+          linha4={linha4}
+        />
       )}
-    </>
+
+      {aula && (
+        <Cartao
+          cardRef={cardRefFila}
+          sede={sedeFixa}
+          aula={aula}
+          horario={HORARIO_PADRAO}
+          saudacao={filaDraft.saudacao}
+          linha2={linha2Variantes(sedeFixa, HORARIO_PADRAO)[filaDraft.l2]}
+          linha3={linha3Variantes(aula)[filaDraft.l3]}
+          linha4={linha4Variantes()[filaDraft.l4]}
+        />
+      )}
+    </ConviteContext.Provider>
   );
 }

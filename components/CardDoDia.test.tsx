@@ -19,52 +19,73 @@ const AULA: Aula = {
   semAula: false,
 };
 
-async function importCardDoDia() {
-  const { CardDoDia } = await import("@/components/CardDoDia");
-  return CardDoDia;
+async function importarComponentes() {
+  const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await import("@/components/CardDoDia");
+  return { ConviteDoDiaProvider, BotaoVisualizarConvite };
 }
 
 describe("CardDoDia", () => {
   it("ao clicar no gatilho, gera e mostra a imagem", async () => {
-    const CardDoDia = await importCardDoDia();
-    render(<CardDoDia aula={AULA} />);
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
     expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
-    expect(toPng).toHaveBeenCalledTimes(1);
+    expect(toPng).toHaveBeenCalled();
   });
 
-  it("'Gerar novamente' chama a captura de novo", async () => {
-    const CardDoDia = await importCardDoDia();
-    render(<CardDoDia aula={AULA} />);
+  it("'Gerar novamente' troca o texto mostrado", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    const { container } = render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
+    const linhaAntes = container.querySelector('[class*="msg"] span:nth-of-type(2)')?.textContent;
 
     fireEvent.click(screen.getByRole("button", { name: "Gerar novamente" }));
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => {
+      const linhaDepois = container.querySelector('[class*="msg"] span:nth-of-type(2)')?.textContent;
+      expect(linhaDepois).not.toBe(linhaAntes);
+    });
   });
 
   it("'Mudar horário' aplica o novo valor e gera de novo", async () => {
-    const CardDoDia = await importCardDoDia();
-    render(<CardDoDia aula={AULA} />);
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
+    const chamadasAntes = toPng.mock.calls.length;
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     const campo = screen.getByPlaceholderText("Ex.: 8h às 12h");
     fireEvent.change(campo, { target: { value: "8h às 12h" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(toPng.mock.calls.length).toBeGreaterThan(chamadasAntes));
   });
 
   it("sede fablab: gera, usa as imagens do Fab Lab Rec e tarja em texto puro (sem <br>)", async () => {
-    const CardDoDia = await importCardDoDia();
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
     const aulaFablab: Aula = { ...AULA, local: "Fab Lab Rec" };
-    const { container } = render(<CardDoDia aula={aulaFablab} />);
+    const { container } = render(
+      <ConviteDoDiaProvider aula={aulaFablab}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
@@ -76,21 +97,68 @@ describe("CardDoDia", () => {
   });
 
   it("fechar e reabrir volta ao horário padrão 18h às 21h", async () => {
-    const CardDoDia = await importCardDoDia();
-    render(<CardDoDia aula={AULA} />);
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Card gerado");
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     fireEvent.change(screen.getByPlaceholderText("Ex.: 8h às 12h"), { target: { value: "8h às 12h" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(screen.getByRole("button", { name: "Mudar horário" })).not.toBeDisabled());
 
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalledTimes(3));
+    await screen.findByAltText("Card gerado");
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
+  });
+
+  it("deixa convites prontos numa fila mesmo sem o usuário ter clicado em nada", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <BotaoVisualizarConvite />
+      </ConviteDoDiaProvider>
+    );
+
+    // A fila enche em segundo plano (via requestIdleCallback/setTimeout) — basta
+    // esperar o toPng ser chamado sem nenhum clique no botão de abrir.
+    await vi.waitFor(() => expect(toPng).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+  });
+
+  it("dois gatilhos sob o mesmo provider abrem o mesmo modal único, não um cada", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <ConviteDoDiaProvider aula={AULA}>
+        <div data-testid="destaque">
+          <BotaoVisualizarConvite />
+        </div>
+        <div data-testid="linha-da-lista">
+          <BotaoVisualizarConvite />
+        </div>
+      </ConviteDoDiaProvider>
+    );
+
+    const botoes = screen.getAllByRole("button", { name: "Visualizar convite" });
+    expect(botoes).toHaveLength(2);
+
+    fireEvent.click(botoes[0]);
+    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    // Um só modal — não dois, um por gatilho.
+    expect(screen.getAllByRole("button", { name: "Fechar" })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(botoes[1]);
+    expect(await screen.findByAltText("Card gerado")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Fechar" })).toHaveLength(1);
   });
 });
