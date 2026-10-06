@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   calendario, dia, emPalavras, horasDe, mesCurto, quantosDias, type Aula,
 } from "@/lib/calendario";
+import { IndicadorHorario } from "@/components/IndicadorHorario";
 import { BotaoVisualizarConvite } from "@/components/ConviteDoDia";
 import { temConvite } from "@/lib/card";
 
@@ -238,6 +239,8 @@ function LinhaDaAula({ aula, hoje }: { aula: Aula; hoje: string }) {
           </span>
         )}
         {aula.horas && <span className="aula__detalhe">{horasDe(aula.horas)}</span>}
+        {/* Horário real, à parte da carga horária — nunca a substitui. */}
+        <IndicadorHorario aula={aula} />
         {/* Local num dia sem aula só confunde — não há aonde ir. */}
         {aula.local && !aula.semAula && <span className="aula__detalhe">{aula.local}</span>}
         {ehHoje && <span className="aula__detalhe" style={{ color: "var(--terracota-queimada)" }}>hoje</span>}

@@ -123,10 +123,17 @@ describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
 
       const img = await page.waitForSelector('img[alt="Convite gerado"]', { timeout: 40_000 });
       const src = await img!.evaluate((el) => (el as HTMLImageElement).src);
-      expect(src.startsWith("data:image/png;base64,")).toBe(true);
-      expect(src.length).toBeGreaterThan(5_000); // uma captura real não é um PNG de 4 bytes
+      expect(src.startsWith("blob:")).toBe(true);
+      const largura = await img!.evaluate((el) => (el as HTMLImageElement).naturalWidth);
+      expect(largura).toBeGreaterThan(500); // uma captura real não é um PNG de 1x1
 
       const linhaAntes = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
+      // O horário inicial agora vem de um fetch real ao .ics (lib/agenda.ts) — não é
+      // mais sempre "18h às 21h". Extrai o que veio, para conferir que "gerar
+      // novamente" troca só a frase, nunca o horário.
+      const horarioInicial = linhaAntes?.match(/\d{1,2}h às \d{1,2}h/)?.[0];
+      expect(horarioInicial).toBeTruthy();
+
       await clicarPorTexto(page, "Gerar novamente");
       await page.waitForFunction(
         (textoAntigo) => {
@@ -138,7 +145,7 @@ describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
       );
       const linhaDepois = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
       expect(linhaDepois).not.toBe(linhaAntes);
-      expect(linhaDepois).toContain("18h às 21h");
+      expect(linhaDepois).toContain(horarioInicial);
 
       // O texto muda assim que se clica (é derivado do estado, não da captura), mas a
       // recaptura do PNG ainda está rolando em segundo plano — os botões de ação ficam
@@ -263,8 +270,9 @@ describe("ConviteDoDia — mobile e conexão lenta (Chromium real)", () => {
       const img1 = await page.waitForSelector('img[alt="Convite gerado"]', { timeout: 90_000 });
       const srcAbrir = await img1!.evaluate((el) => (el as HTMLImageElement).src);
       const linhaAbrir = await page.$eval("[class*='msg'] span:nth-of-type(2)", (el) => el.textContent);
-      expect(srcAbrir.startsWith("data:image/png;base64,")).toBe(true);
-      expect(srcAbrir.length).toBeGreaterThan(5_000);
+      expect(srcAbrir.startsWith("blob:")).toBe(true);
+      const larguraAbrir = await img1!.evaluate((el) => (el as HTMLImageElement).naturalWidth);
+      expect(larguraAbrir).toBeGreaterThan(500);
 
       // Fecha e reabre sem clicar em "gerar novamente" — tem que vir exatamente o
       // mesmo convite de antes, não o próximo da fila.

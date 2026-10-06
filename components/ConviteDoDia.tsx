@@ -11,9 +11,12 @@ import {
   tarjaCacgb, tarjaFablab, linha2Variantes, linha3Variantes, linha4Variantes,
   escolherIndice, escolherIndiceDiferente, type Sede,
 } from "@/lib/card";
+import { useHorarios } from "@/components/HorariosContext";
 import styles from "./ConviteDoDia.module.css";
 
-const HORARIO_PADRAO = "18h às 21h";
+// Cai aqui quando não há horário real disponível (ainda carregando, busca ao
+// .ics falhou, ou a aula não bateu com nenhum evento) — um palpite, não um dado.
+const HORARIO_PADRAO_FALLBACK = "18h às 21h";
 
 // Quantos convites ficam prontos à frente, num cantinho invisível da página,
 // enquanto o usuário nem clicou em nada ainda. "Visualizar convite" só olha o
@@ -69,13 +72,20 @@ function cancelarOcioso(id: number) {
 // escapando do mock e caindo no módulo de verdade (que não funciona no jsdom).
 let snapdomPromise: Promise<typeof import("@zumer/snapdom")> | null = null;
 
+// `toBlob` (-> URL.createObjectURL), nunca `toPng` (-> data: URI base64). Um
+// convite em 2x escala passa de 4MB; atribuir uma data: URI desse tamanho a
+// um <img src> faz o browser decodificar o base64 de forma síncrona, travando
+// a thread principal por ~200-300ms — foi isso que fazia "gerar novamente"
+// parecer lento mesmo com a imagem já pronta na fila. blob: URLs passam pelo
+// pipeline normal de carregamento assíncrono. Em troca, cada blob: URL
+// precisa ser liberada explicitamente — ver trocarGeradoUrl.
 async function capturarCartao(el: HTMLDivElement): Promise<string> {
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   await Promise.all(Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img)));
   if (!snapdomPromise) snapdomPromise = import("@zumer/snapdom");
   const { snapdom } = await snapdomPromise;
-  const img = await snapdom.toPng(el, { scale: 2, embedFonts: false });
-  return img.src;
+  const blob = await snapdom.toBlob(el, { scale: 2, embedFonts: false, type: "png" });
+  return URL.createObjectURL(blob);
 }
 
 function Cartao({
@@ -155,12 +165,16 @@ export function BotaoVisualizarConvite() {
 export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; children: ReactNode }) {
   const sedeFixa = useMemo(() => (aula ? sedeDoLocal(aula.local) : "cacgb"), [aula]);
 
+  const estadoHorarios = useHorarios();
+  const horarioReal = aula && estadoHorarios.status === "pronto" ? estadoHorarios.horarios[aula.data] : undefined;
+  const horarioPadrao = horarioReal ?? HORARIO_PADRAO_FALLBACK;
+
   const [aberto, setAberto] = useState(false);
   const [sede, setSede] = useState<Sede>(sedeFixa);
   const [saudacao, setSaudacao] = useState<"Bom dia!" | "Boa tarde!">("Bom dia!");
-  const [horario, setHorario] = useState(HORARIO_PADRAO);
+  const [horario, setHorario] = useState(horarioPadrao);
   const [editandoHorario, setEditandoHorario] = useState(false);
-  const [horarioRascunho, setHorarioRascunho] = useState(HORARIO_PADRAO);
+  const [horarioRascunho, setHorarioRascunho] = useState(horarioPadrao);
   const [indiceLinha2, setIndiceLinha2] = useState(0);
   const [indiceLinha3, setIndiceLinha3] = useState(0);
   const [indiceLinha4, setIndiceLinha4] = useState(0);
@@ -168,6 +182,17 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   const [exportando, setExportando] = useState(false);
   const [geradoUrl, setGeradoUrl] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Toda troca de geradoUrl passa por aqui: libera a blob: URL anterior, já
+  // que ela não serve mais pra nada (o item correspondente, se veio da fila,
+  // já foi retirado dela por quem chamou). Sem isso, cada convite gerado
+  // vazaria memória pelo resto da sessão.
+  function trocarGeradoUrl(novo: string | null) {
+    setGeradoUrl((anterior) => {
+      if (anterior) URL.revokeObjectURL(anterior);
+      return novo;
+    });
+  }
 
   // A pilha de convites prontos. `filaRef` é a fonte de verdade (lida de
   // forma síncrona por abrir(), que só espia o topo; mutada por
@@ -196,13 +221,13 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     // mesmo convite de antes — não buscar de novo na fila, que pode ter andado
     // (enchido ou não) enquanto o modal estava fechado. Só busca um convite novo
     // (da fila ou ao vivo) na primeira vez que abre ou depois de mudar o horário.
-    if (geradoUrl && horario === HORARIO_PADRAO) {
+    if (geradoUrl && horario === horarioPadrao) {
       setExportando(false);
       return;
     }
 
     setSaudacao(saudacaoPorHora(new Date().getHours()));
-    setHorario(HORARIO_PADRAO);
+    setHorario(horarioPadrao);
 
     // Só espia o topo — não remove. "Gerar novamente" é quem de fato consome.
     const item = filaRef.current[0];
@@ -210,10 +235,10 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       setIndiceLinha2(item.indiceLinha2);
       setIndiceLinha3(item.indiceLinha3);
       setIndiceLinha4(item.indiceLinha4);
-      setGeradoUrl(item.url);
+      trocarGeradoUrl(item.url);
       setExportando(false);
     } else {
-      const l2 = escolherIndice(linha2Variantes(sedeFixa, HORARIO_PADRAO).length);
+      const l2 = escolherIndice(linha2Variantes(sedeFixa, horarioPadrao).length);
       const l3 = escolherIndice(linha3Variantes(aula).length);
       const l4 = escolherIndice(linha4Variantes().length);
       // Alinha a fila em segundo plano ao que acabou de ir pra tela — sem isso,
@@ -224,7 +249,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       setIndiceLinha2(l2);
       setIndiceLinha3(l3);
       setIndiceLinha4(l4);
-      setGeradoUrl(null);
+      trocarGeradoUrl(null);
       setCapturaPendente((n) => n + 1);
     }
   }
@@ -244,7 +269,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   // editado (a fila só pré-gera para o horário padrão).
   function gerarNovamente() {
     if (!aula) return;
-    if (horario === HORARIO_PADRAO) {
+    if (horario === horarioPadrao) {
       filaRef.current.shift();
       const proximo = filaRef.current[0];
       setTamanhoFila(filaRef.current.length);
@@ -262,7 +287,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
         setIndiceLinha2(proximo.indiceLinha2);
         setIndiceLinha3(proximo.indiceLinha3);
         setIndiceLinha4(proximo.indiceLinha4);
-        setGeradoUrl(proximo.url);
+        trocarGeradoUrl(proximo.url);
         return;
       }
     }
@@ -301,7 +326,8 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       setErro(null);
       try {
         const url = await capturarCartao(el);
-        if (!cancelado) setGeradoUrl(url);
+        if (!cancelado) trocarGeradoUrl(url);
+        else URL.revokeObjectURL(url);
       } catch (err) {
         console.error(err);
         if (!cancelado) setErro("Erro ao gerar imagem.");
@@ -345,7 +371,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     }
 
     async function gerarItemFila(): Promise<ItemGerado> {
-      const l2 = escolherIndiceDiferente(linha2Variantes(sedeFixa, HORARIO_PADRAO).length, ultimoFilaRef.current.l2);
+      const l2 = escolherIndiceDiferente(linha2Variantes(sedeFixa, horarioPadrao).length, ultimoFilaRef.current.l2);
       const l3 = escolherIndiceDiferente(linha3Variantes(aula!).length, ultimoFilaRef.current.l3);
       const l4 = escolherIndiceDiferente(linha4Variantes().length, ultimoFilaRef.current.l4);
       setFilaDraft({ l2, l3, l4, saudacao: saudacaoPorHora(new Date().getHours()) });
@@ -457,9 +483,9 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
           conviteRef={conviteRefFila}
           sede={sedeFixa}
           aula={aula}
-          horario={HORARIO_PADRAO}
+          horario={horarioPadrao}
           saudacao={filaDraft.saudacao}
-          linha2={linha2Variantes(sedeFixa, HORARIO_PADRAO)[filaDraft.l2]}
+          linha2={linha2Variantes(sedeFixa, horarioPadrao)[filaDraft.l2]}
           linha3={linha3Variantes(aula)[filaDraft.l3]}
           linha4={linha4Variantes()[filaDraft.l4]}
         />

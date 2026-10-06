@@ -3,14 +3,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import type { Aula } from "@/lib/calendario";
+import { HorariosContext } from "@/components/HorariosContext";
 
 afterEach(cleanup);
 
-const toPng = vi.fn(async () => ({ src: "data:image/png;base64,AAAA" }));
-vi.mock("@zumer/snapdom", () => ({ snapdom: { toPng } }));
-// jsdom não carrega imagens de verdade nem implementa HTMLImageElement.decode() —
-// sem isso, a espera por `<img>` do cartão nunca resolveria no teste.
-HTMLImageElement.prototype.decode = vi.fn().mockResolvedValue(undefined);
+const toBlob = vi.fn(async () => new Blob(["convite"], { type: "image/png" }));
+vi.mock("@zumer/snapdom", () => ({ snapdom: { toBlob } }));
 
 const AULA: Aula = {
   data: "2026-09-30", diaDaSemana: "Qua", titulo: "Luteria do Berimbau - Aula 3",
@@ -36,7 +34,7 @@ describe("ConviteDoDia", () => {
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
 
     expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
-    expect(toPng).toHaveBeenCalled();
+    expect(toBlob).toHaveBeenCalled();
   });
 
   it("'Gerar novamente' troca o texto mostrado", async () => {
@@ -68,14 +66,14 @@ describe("ConviteDoDia", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     await screen.findByAltText("Convite gerado");
-    const chamadasAntes = toPng.mock.calls.length;
+    const chamadasAntes = toBlob.mock.calls.length;
 
     fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
     const campo = screen.getByPlaceholderText("Ex.: 8h às 12h");
     fireEvent.change(campo, { target: { value: "8h às 12h" } });
     fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
-    await vi.waitFor(() => expect(toPng.mock.calls.length).toBeGreaterThan(chamadasAntes));
+    await vi.waitFor(() => expect(toBlob.mock.calls.length).toBeGreaterThan(chamadasAntes));
   });
 
   it("sede fablab: gera, usa as imagens do Fab Lab Rec e tarja em texto puro (sem <br>)", async () => {
@@ -119,6 +117,65 @@ describe("ConviteDoDia", () => {
     expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
   });
 
+  it("usa o horário do contexto (status pronto) como padrão, em vez de 18h às 21h", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    const { container } = render(
+      <HorariosContext.Provider value={{ status: "pronto", horarios: { [AULA.data]: "15h às 18h" } }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+
+    expect(container.querySelector("[class*='tarja']")!.textContent).toContain("15h às 18h");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("fechar e reabrir com horário do contexto volta para ele, não para 18h às 21h", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <HorariosContext.Provider value={{ status: "pronto", horarios: { [AULA.data]: "15h às 18h" } }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex.: 8h às 12h"), { target: { value: "8h às 12h" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+    await vi.waitFor(() => expect(screen.getByRole("button", { name: "Mudar horário" })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("15h às 18h");
+  });
+
+  it("usa o horário padrão quando o contexto está carregando ou deu erro", async () => {
+    const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
+    render(
+      <HorariosContext.Provider value={{ status: "erro" }}>
+        <ConviteDoDiaProvider aula={AULA}>
+          <BotaoVisualizarConvite />
+        </ConviteDoDiaProvider>
+      </HorariosContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
+    await screen.findByAltText("Convite gerado");
+    fireEvent.click(screen.getByRole("button", { name: "Mudar horário" }));
+    expect(screen.getByPlaceholderText("Ex.: 8h às 12h")).toHaveValue("18h às 21h");
+  });
+
   it("deixa convites prontos numa fila mesmo sem o usuário ter clicado em nada", async () => {
     const { ConviteDoDiaProvider, BotaoVisualizarConvite } = await importarComponentes();
     render(
@@ -128,8 +185,8 @@ describe("ConviteDoDia", () => {
     );
 
     // A fila enche em segundo plano (via requestIdleCallback/setTimeout) — basta
-    // esperar o toPng ser chamado sem nenhum clique no botão de abrir.
-    await vi.waitFor(() => expect(toPng).toHaveBeenCalled());
+    // esperar o toBlob ser chamado sem nenhum clique no botão de abrir.
+    await vi.waitFor(() => expect(toBlob).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole("button", { name: "Visualizar convite" }));
     expect(await screen.findByAltText("Convite gerado")).toBeInTheDocument();
