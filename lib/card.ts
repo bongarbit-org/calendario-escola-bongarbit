@@ -22,14 +22,24 @@ export function temConvite(aula: Aula): boolean {
 }
 
 export function nomeCompletoDaSede(sede: Sede): string {
-  return sede === "cacgb" ? "Centro de Arte e Cultura Grupo Bongar" : "Fab Lab Rec";
+  return sede === "cacgb"
+    ? "Centro de Arte e Cultura Grupo Bongar"
+    : "Fab Lab Rec";
 }
 
 export function saudacaoPorHora(hora: number): "Bom dia!" | "Boa tarde!" {
   return hora < 12 ? "Bom dia!" : "Boa tarde!";
 }
 
-const DIAS_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+const DIAS_SEMANA = [
+  "domingo",
+  "segunda",
+  "terça",
+  "quarta",
+  "quinta",
+  "sexta",
+  "sábado",
+];
 
 /** "2026-09-30" -> "quarta, 30/9" (sem zero à esquerda). */
 export function diaDataDeAula(data: string): string {
@@ -62,8 +72,16 @@ export function stripPrefixoProf(equipe: string | null): string | null {
 }
 
 const ORDINAIS = [
-  "primeira", "segunda", "terceira", "quarta", "quinta",
-  "sexta", "sétima", "oitava", "nona", "décima",
+  "primeira",
+  "segunda",
+  "terceira",
+  "quarta",
+  "quinta",
+  "sexta",
+  "sétima",
+  "oitava",
+  "nona",
+  "décima",
 ];
 
 export function ordinalPT(n: number): string {
@@ -84,12 +102,20 @@ function topoTarja(prefixo: string, diaData: string): string {
 }
 
 /** Tarja do cartão cacgb: HTML, com <br> entre a data e o horário. */
-export function tarjaCacgb(prefixo: string, diaData: string, horario: string): string {
+export function tarjaCacgb(
+  prefixo: string,
+  diaData: string,
+  horario: string,
+): string {
   return `${esc(topoTarja(prefixo, diaData))}<br>${esc(horario)}`;
 }
 
 /** Tarja do cartão fablab: texto puro, data e horário na mesma linha. */
-export function tarjaFablab(prefixo: string, diaData: string, horario: string): string {
+export function tarjaFablab(
+  prefixo: string,
+  diaData: string,
+  horario: string,
+): string {
   return `${topoTarja(prefixo, diaData)} · ${horario}`;
 }
 
@@ -127,6 +153,7 @@ export function linha3Variantes(aula: Aula): string[] {
 
   const instrumento = extrairInstrumento(aula.titulo);
   if (instrumento !== null) {
+    // biome-ignore lint/style/noNonNullAssertion: mesma regex de extrairInstrumento já casou — o grupo do número também existe.
     const ordinal = ordinalPT(extrairNumeroDaAula(aula.titulo)!);
     return [
       `É a **${ordinal} aula de ${instrumento}**${comQuem}.`,
@@ -175,7 +202,10 @@ export function linha4Variantes(): string[] {
 }
 
 /** Sorteia um índice em [0, n). `random` é injetável para os testes. */
-export function escolherIndice(n: number, random: () => number = Math.random): number {
+export function escolherIndice(
+  n: number,
+  random: () => number = Math.random,
+): number {
   return Math.floor(random() * n);
 }
 
@@ -184,7 +214,11 @@ export function escolherIndice(n: number, random: () => number = Math.random): n
  * não pode, por azar, sortear a mesma frase de novo. Sorteia entre as n-1 opções
  * restantes e desloca por cima de `atual` para manter distribuição uniforme.
  */
-export function escolherIndiceDiferente(n: number, atual: number, random: () => number = Math.random): number {
+export function escolherIndiceDiferente(
+  n: number,
+  atual: number,
+  random: () => number = Math.random,
+): number {
   if (n <= 1) return 0;
   const sorteado = escolherIndice(n - 1, random);
   return sorteado >= atual ? sorteado + 1 : sorteado;

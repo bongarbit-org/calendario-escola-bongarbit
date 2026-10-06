@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buscarHorarios, AGENDA_ICS } from "@/lib/agenda";
+import { AGENDA_ICS, buscarHorarios } from "@/lib/agenda";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const resultado = await buscarHorarios(AGENDA_ICS);
   if (!resultado.ok) {
-    return NextResponse.json({ erro: "não foi possível buscar a agenda" }, { status: 502 });
+    return NextResponse.json(
+      { erro: "não foi possível buscar a agenda" },
+      { status: 502 },
+    );
   }
   return NextResponse.json(Object.fromEntries(resultado.horarios));
 }

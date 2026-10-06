@@ -1,17 +1,32 @@
 "use client";
 
 import {
-  createContext, useContext, useEffect, useMemo, useRef, useState,
-  type ReactNode, type RefObject,
+  createContext,
+  type ReactNode,
+  type RefObject,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useHorarios } from "@/components/HorariosContext";
 import type { Aula } from "@/lib/calendario";
 import {
-  sedeDoLocal, saudacaoPorHora, diaDataDeAula, negrito,
-  tarjaCacgb, tarjaFablab, linha2Variantes, linha3Variantes, linha4Variantes,
-  escolherIndice, escolherIndiceDiferente, type Sede,
+  diaDataDeAula,
+  escolherIndice,
+  escolherIndiceDiferente,
+  linha2Variantes,
+  linha3Variantes,
+  linha4Variantes,
+  negrito,
+  type Sede,
+  saudacaoPorHora,
+  sedeDoLocal,
+  tarjaCacgb,
+  tarjaFablab,
 } from "@/lib/card";
-import { useHorarios } from "@/components/HorariosContext";
 import styles from "./ConviteDoDia.module.css";
 
 // Cai aqui quando não há horário real disponível (ainda carregando, busca ao
@@ -52,14 +67,20 @@ function aguardarImagem(img: HTMLImageElement): Promise<void> {
 // thread principal, porque precisa do DOM de verdade). `requestIdleCallback`
 // não existe no Safari nem no jsdom dos testes, daí o fallback com setTimeout.
 function agendarOcioso(fn: () => void): number {
-  if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.requestIdleCallback === "function"
+  ) {
     return window.requestIdleCallback(fn);
   }
   return window.setTimeout(fn, 200);
 }
 
 function cancelarOcioso(id: number) {
-  if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.cancelIdleCallback === "function"
+  ) {
     window.cancelIdleCallback(id);
   } else {
     window.clearTimeout(id);
@@ -80,16 +101,31 @@ let snapdomPromise: Promise<typeof import("@zumer/snapdom")> | null = null;
 // pipeline normal de carregamento assíncrono. Em troca, cada blob: URL
 // precisa ser liberada explicitamente — ver trocarGeradoUrl.
 async function capturarCartao(el: HTMLDivElement): Promise<string> {
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-  await Promise.all(Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img)));
+  await new Promise((r) =>
+    requestAnimationFrame(() => requestAnimationFrame(r)),
+  );
+  await Promise.all(
+    Array.from(el.querySelectorAll("img")).map((img) => aguardarImagem(img)),
+  );
   if (!snapdomPromise) snapdomPromise = import("@zumer/snapdom");
   const { snapdom } = await snapdomPromise;
-  const blob = await snapdom.toBlob(el, { scale: 2, embedFonts: false, type: "png" });
+  const blob = await snapdom.toBlob(el, {
+    scale: 2,
+    embedFonts: false,
+    type: "png",
+  });
   return URL.createObjectURL(blob);
 }
 
 function Cartao({
-  conviteRef, sede, aula, horario, saudacao, linha2, linha3, linha4,
+  conviteRef,
+  sede,
+  aula,
+  horario,
+  saudacao,
+  linha2,
+  linha3,
+  linha4,
 }: {
   conviteRef: RefObject<HTMLDivElement | null>;
   sede: Sede;
@@ -111,10 +147,16 @@ function Cartao({
     >
       {sede === "cacgb" ? (
         <>
-          <img className={styles.marca} src="/img/cartao/bongarbit-lockup-horizontal.png" alt="" />
+          <img
+            className={styles.marca}
+            src="/img/cartao/bongarbit-lockup-horizontal.png"
+            alt=""
+          />
           <div
             className={styles.tarja}
-            dangerouslySetInnerHTML={{ __html: tarjaCacgb(prefixo, diaData, horario) }}
+            dangerouslySetInnerHTML={{
+              __html: tarjaCacgb(prefixo, diaData, horario),
+            }}
           />
           <div className={styles.msg}>
             <span className={styles.hi}>{saudacao}</span>
@@ -122,12 +164,22 @@ function Cartao({
             <span dangerouslySetInnerHTML={{ __html: negrito(linha3) }} />
             <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
           </div>
-          <img className={styles.vila} src="/img/cartao/faixa-vila.png" alt="" />
+          <img
+            className={styles.vila}
+            src="/img/cartao/faixa-vila.png"
+            alt=""
+          />
         </>
       ) : (
         <>
-          <img className={styles.marca} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
-          <div className={styles.tarja}>{tarjaFablab(prefixo, diaData, horario)}</div>
+          <img
+            className={styles.marca}
+            src="/img/cartao/bongarbit-lettering-negativo.png"
+            alt=""
+          />
+          <div className={styles.tarja}>
+            {tarjaFablab(prefixo, diaData, horario)}
+          </div>
           <div className={styles.msg}>
             <span className={styles.hi}>{saudacao}</span>
             <span dangerouslySetInnerHTML={{ __html: negrito(linha2) }} />
@@ -135,12 +187,24 @@ function Cartao({
             <span dangerouslySetInnerHTML={{ __html: negrito(linha4) }} />
           </div>
           <div className={styles.rodape}>
-            <img className={styles.rodapeBong} src="/img/cartao/bongarbit-lettering-negativo.png" alt="" />
-            <img className={styles.rodapeFab} src="/img/cartao/fablab-rec-empilhado-branco.png" alt="" />
+            <img
+              className={styles.rodapeBong}
+              src="/img/cartao/bongarbit-lettering-negativo.png"
+              alt=""
+            />
+            <img
+              className={styles.rodapeFab}
+              src="/img/cartao/fablab-rec-empilhado-branco.png"
+              alt=""
+            />
           </div>
         </>
       )}
-      <img className={styles.borda} src="/img/cartao/borda-instagram.png" alt="" />
+      <img
+        className={styles.borda}
+        src="/img/cartao/borda-instagram.png"
+        alt=""
+      />
     </div>
   );
 }
@@ -154,7 +218,10 @@ const ConviteContext = createContext<(() => void) | null>(null);
 
 export function BotaoVisualizarConvite() {
   const abrir = useContext(ConviteContext);
-  if (!abrir) throw new Error("BotaoVisualizarConvite precisa estar dentro de ConviteDoDiaProvider");
+  if (!abrir)
+    throw new Error(
+      "BotaoVisualizarConvite precisa estar dentro de ConviteDoDiaProvider",
+    );
   return (
     <button type="button" className="botao botao--mini" onClick={abrir}>
       Visualizar convite
@@ -162,16 +229,30 @@ export function BotaoVisualizarConvite() {
   );
 }
 
-export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; children: ReactNode }) {
-  const sedeFixa = useMemo(() => (aula ? sedeDoLocal(aula.local) : "cacgb"), [aula]);
+export function ConviteDoDiaProvider({
+  aula,
+  children,
+}: {
+  aula: Aula | null;
+  children: ReactNode;
+}) {
+  const sedeFixa = useMemo(
+    () => (aula ? sedeDoLocal(aula.local) : "cacgb"),
+    [aula],
+  );
 
   const estadoHorarios = useHorarios();
-  const horarioReal = aula && estadoHorarios.status === "pronto" ? estadoHorarios.horarios[aula.data] : undefined;
+  const horarioReal =
+    aula && estadoHorarios.status === "pronto"
+      ? estadoHorarios.horarios[aula.data]
+      : undefined;
   const horarioPadrao = horarioReal ?? HORARIO_PADRAO_FALLBACK;
 
   const [aberto, setAberto] = useState(false);
   const [sede, setSede] = useState<Sede>(sedeFixa);
-  const [saudacao, setSaudacao] = useState<"Bom dia!" | "Boa tarde!">("Bom dia!");
+  const [saudacao, setSaudacao] = useState<"Bom dia!" | "Boa tarde!">(
+    "Bom dia!",
+  );
   const [horario, setHorario] = useState(horarioPadrao);
   const [editandoHorario, setEditandoHorario] = useState(false);
   const [horarioRascunho, setHorarioRascunho] = useState(horarioPadrao);
@@ -201,7 +282,12 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   const filaRef = useRef<ItemGerado[]>([]);
   const [tamanhoFila, setTamanhoFila] = useState(0);
   const ultimoFilaRef = useRef({ l2: -1, l3: -1, l4: -1 });
-  const [filaDraft, setFilaDraft] = useState({ l2: 0, l3: 0, l4: 0, saudacao: "Bom dia!" as "Bom dia!" | "Boa tarde!" });
+  const [filaDraft, setFilaDraft] = useState({
+    l2: 0,
+    l3: 0,
+    l4: 0,
+    saudacao: "Bom dia!" as "Bom dia!" | "Boa tarde!",
+  });
 
   const conviteRef = useRef<HTMLDivElement>(null);
   const conviteRefFila = useRef<HTMLDivElement>(null);
@@ -238,7 +324,9 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       trocarGeradoUrl(item.url);
       setExportando(false);
     } else {
-      const l2 = escolherIndice(linha2Variantes(sedeFixa, horarioPadrao).length);
+      const l2 = escolherIndice(
+        linha2Variantes(sedeFixa, horarioPadrao).length,
+      );
       const l3 = escolherIndice(linha3Variantes(aula).length);
       const l4 = escolherIndice(linha4Variantes().length);
       // Alinha a fila em segundo plano ao que acabou de ir pra tela — sem isso,
@@ -291,8 +379,14 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
         return;
       }
     }
-    const l2 = escolherIndiceDiferente(linha2Variantes(sede, horario).length, indiceLinha2);
-    const l3 = escolherIndiceDiferente(linha3Variantes(aula).length, indiceLinha3);
+    const l2 = escolherIndiceDiferente(
+      linha2Variantes(sede, horario).length,
+      indiceLinha2,
+    );
+    const l3 = escolherIndiceDiferente(
+      linha3Variantes(aula).length,
+      indiceLinha3,
+    );
     const l4 = escolherIndiceDiferente(linha4Variantes().length, indiceLinha4);
     ultimoFilaRef.current = { l2, l3, l4 };
     setIndiceLinha2(l2);
@@ -314,8 +408,14 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   // acabou de entregar. `ultimoCapturaPendenteRef` garante que só captura quando
   // `capturaPendente` é realmente um valor novo, não só porque o efeito rodou de novo.
   const ultimoCapturaPendenteRef = useRef(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: trocarGeradoUrl fica de fora de propósito — ver comentário acima.
   useEffect(() => {
-    if (!aberto || capturaPendente === 0 || capturaPendente === ultimoCapturaPendenteRef.current) return;
+    if (
+      !aberto ||
+      capturaPendente === 0 ||
+      capturaPendente === ultimoCapturaPendenteRef.current
+    )
+      return;
     ultimoCapturaPendenteRef.current = capturaPendente;
     let cancelado = false;
 
@@ -340,7 +440,6 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     return () => {
       cancelado = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aberto, capturaPendente]);
 
   // Repõe a fila em segundo plano, um convite por vez, sempre que ela cai abaixo
@@ -349,6 +448,7 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
   // da raiz da página), então qualquer botão que apareça depois já encontra a fila
   // sendo preenchida ou pronta. `agendarOcioso` cede a thread principal entre uma
   // captura e outra, para o usuário não sentir a página travar enquanto isso roda.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: horarioPadrao fica de fora de propósito — reiniciaria a fila a cada edição do rascunho.
   useEffect(() => {
     if (!aula || tamanhoFila >= CAPACIDADE_FILA) return;
     let cancelado = false;
@@ -359,7 +459,11 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
         gerarItemFila()
           .then((item) => {
             if (cancelado) return;
-            ultimoFilaRef.current = { l2: item.indiceLinha2, l3: item.indiceLinha3, l4: item.indiceLinha4 };
+            ultimoFilaRef.current = {
+              l2: item.indiceLinha2,
+              l3: item.indiceLinha3,
+              l4: item.indiceLinha4,
+            };
             filaRef.current.push(item);
             setTamanhoFila(filaRef.current.length);
           })
@@ -371,10 +475,25 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
     }
 
     async function gerarItemFila(): Promise<ItemGerado> {
-      const l2 = escolherIndiceDiferente(linha2Variantes(sedeFixa, horarioPadrao).length, ultimoFilaRef.current.l2);
-      const l3 = escolherIndiceDiferente(linha3Variantes(aula!).length, ultimoFilaRef.current.l3);
-      const l4 = escolherIndiceDiferente(linha4Variantes().length, ultimoFilaRef.current.l4);
-      setFilaDraft({ l2, l3, l4, saudacao: saudacaoPorHora(new Date().getHours()) });
+      const l2 = escolherIndiceDiferente(
+        linha2Variantes(sedeFixa, horarioPadrao).length,
+        ultimoFilaRef.current.l2,
+      );
+      const l3 = escolherIndiceDiferente(
+        // biome-ignore lint/style/noNonNullAssertion: aula não muda dentro deste efeito — já checado no topo (linha 452).
+        linha3Variantes(aula!).length,
+        ultimoFilaRef.current.l3,
+      );
+      const l4 = escolherIndiceDiferente(
+        linha4Variantes().length,
+        ultimoFilaRef.current.l4,
+      );
+      setFilaDraft({
+        l2,
+        l3,
+        l4,
+        saudacao: saudacaoPorHora(new Date().getHours()),
+      });
       const el = conviteRefFila.current;
       if (!el) throw new Error("cartão da fila sem DOM");
       const url = await capturarCartao(el);
@@ -386,7 +505,6 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
       cancelado = true;
       cancelarOcioso(idleId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tamanhoFila, sedeFixa, aula]);
 
   return (
@@ -395,6 +513,8 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
 
       {aberto &&
         createPortal(
+          // biome-ignore lint/a11y/noStaticElementInteractions: clique no fundo é só um atalho de mouse — o botão "Fechar modal" abaixo já cobre teclado/leitor de tela.
+          // biome-ignore lint/a11y/useKeyWithClickEvents: idem.
           <div
             className={styles.fundo}
             onClick={(e) => {
@@ -402,12 +522,21 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
             }}
           >
             <div className={styles.caixa}>
-              <button type="button" className={styles.fechar} onClick={fechar} aria-label="Fechar modal">
+              <button
+                type="button"
+                className={styles.fechar}
+                onClick={fechar}
+                aria-label="Fechar modal"
+              >
                 ×
               </button>
 
               {geradoUrl ? (
-                <img className={styles.resultadoImg} src={geradoUrl} alt="Convite gerado" />
+                <img
+                  className={styles.resultadoImg}
+                  src={geradoUrl}
+                  alt="Convite gerado"
+                />
               ) : erro ? (
                 <p className={styles.erro}>{erro}</p>
               ) : (
@@ -421,9 +550,14 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
                     value={horarioRascunho}
                     onChange={(e) => setHorarioRascunho(e.target.value)}
                     placeholder="Ex.: 8h às 12h"
+                    // biome-ignore lint/a11y/noAutofocus: input só aparece após o usuário clicar em "editar horário", foco imediato é esperado aqui.
                     autoFocus
                   />
-                  <button type="button" className="botao botao--mini" onClick={aplicarHorario}>
+                  <button
+                    type="button"
+                    className="botao botao--mini"
+                    onClick={aplicarHorario}
+                  >
                     Aplicar
                   </button>
                   <button
@@ -455,14 +589,18 @@ export function ConviteDoDiaProvider({ aula, children }: { aula: Aula | null; ch
                   >
                     Gerar novamente
                   </button>
-                  <button type="button" className="botao botao--mini" onClick={fechar}>
+                  <button
+                    type="button"
+                    className="botao botao--mini"
+                    onClick={fechar}
+                  >
                     Fechar
                   </button>
                 </div>
               )}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
 
       {aberto && aula && (

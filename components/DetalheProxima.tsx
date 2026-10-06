@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { horasDe, type Aula } from "@/lib/calendario";
 import { useHorarios } from "@/components/HorariosContext";
+import { type Aula, horasDe } from "@/lib/calendario";
 
 /**
  * A linha "Trilha · carga horária · horário real · local" do Próximo encontro.
@@ -13,13 +13,19 @@ import { useHorarios } from "@/components/HorariosContext";
 export function DetalheProxima({ aula }: { aula: Aula }) {
   const estado = useHorarios();
 
-  const partes: ReactNode[] = [aula.trilha, horasDe(aula.horas)].filter(Boolean);
+  const partes: ReactNode[] = [aula.trilha, horasDe(aula.horas)].filter(
+    Boolean,
+  );
 
   if (estado.status === "carregando") {
     partes.push(
-      <span className="aula__detalhe--carregando" aria-label="Carregando horário real">
+      <span
+        className="aula__detalhe--carregando"
+        role="img"
+        aria-label="Carregando horário real"
+      >
         ···
-      </span>
+      </span>,
     );
   } else if (estado.status === "erro") {
     partes.push(
@@ -30,7 +36,7 @@ export function DetalheProxima({ aula }: { aula: Aula }) {
         title="Não foi possível obter o horário das aulas"
       >
         !
-      </span>
+      </span>,
     );
   } else if (estado.horarios[aula.data]) {
     partes.push(estado.horarios[aula.data]);
@@ -41,6 +47,7 @@ export function DetalheProxima({ aula }: { aula: Aula }) {
   return (
     <p className="aula__detalhe" style={{ marginTop: "var(--space-3)" }}>
       {partes.map((parte, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: ordem é fixa (trilha, carga, horário, local), lista só cresce/encolhe, nunca reordena.
         <span key={i}>
           {i > 0 && " · "}
           {parte}

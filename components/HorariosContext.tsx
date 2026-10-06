@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export type EstadoHorarios =
   | { status: "carregando" }
@@ -44,5 +50,9 @@ export function ProvedorHorarios({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return <HorariosContext.Provider value={estado}>{children}</HorariosContext.Provider>;
+  return (
+    <HorariosContext.Provider value={estado}>
+      {children}
+    </HorariosContext.Provider>
+  );
 }

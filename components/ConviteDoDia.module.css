@@ -42,15 +42,21 @@
   color: var(--text-body);
   cursor: pointer;
 }
-.fechar:hover { background: var(--grafite-08); color: var(--text-strong); }
+.fechar:hover {
+  background: var(--grafite-08);
+  color: var(--text-strong);
+}
 
-.carregando, .erro {
+.carregando,
+.erro {
   font-size: var(--fs-small);
   color: var(--text-body);
   padding: var(--space-6) 0;
   text-align: center;
 }
-.erro { color: var(--text-link); }
+.erro {
+  color: var(--text-link);
+}
 
 .resultadoImg {
   width: 100%;
@@ -58,9 +64,17 @@
   border: var(--rule-hair) solid var(--border-rule);
 }
 
-.acoes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
 
-.horario { display: flex; gap: var(--space-2); align-items: center; }
+.horario {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
 .horario input {
   flex: 1 1 auto;
   min-width: 0;
@@ -89,7 +103,15 @@
   box-sizing: border-box;
   color: #161512;
 }
-.borda { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 5; }
+.borda {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 5;
+}
 .msg {
   display: flex;
   flex-direction: column;
@@ -100,31 +122,106 @@
   text-wrap: pretty;
   z-index: 2;
 }
-.msg b { font-weight: 700; }
-.hi { font-size: 42px; font-weight: 700; }
-.marca { align-self: center; display: block; z-index: 2; }
+.msg b {
+  font-weight: 700;
+}
+.hi {
+  font-size: 42px;
+  font-weight: 700;
+}
+.marca {
+  align-self: center;
+  display: block;
+  z-index: 2;
+}
 
-.cacgb { background: linear-gradient(180deg,#d4752d 0%,#d3ad84 42%,#ead6bf 74%,#f4e8da 100%); }
-.cacgb .marca { width: 660px; }
+.cacgb {
+  background: linear-gradient(
+    180deg,
+    #d4752d 0%,
+    #d3ad84 42%,
+    #ead6bf 74%,
+    #f4e8da 100%
+  );
+}
+.cacgb .marca {
+  width: 660px;
+}
 .cacgb .tarja {
-  align-self: center; margin-top: 52px; background: #6b3c23; color: #ead6bf;
-  padding: 22px 40px; font-size: 29px; font-weight: 700; letter-spacing: .14em;
-  text-transform: uppercase; text-align: center; line-height: 1.35; z-index: 2;
+  align-self: center;
+  margin-top: 52px;
+  background: #6b3c23;
+  color: #ead6bf;
+  padding: 22px 40px;
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.35;
+  z-index: 2;
 }
-.cacgb .msg { margin-top: 52px; }
+.cacgb .msg {
+  margin-top: 52px;
+}
 .cacgb .vila {
-  position: absolute; left: 0; right: 0; bottom: 0; width: 100%; max-height: 300px;
-  object-fit: cover; object-position: top; display: block; z-index: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  z-index: 1;
 }
 
-.fablab { background: linear-gradient(180deg,#5f356d 0%,#7d4a8e 28%,#a075ad 58%,#ece0f0 100%); }
-.fablab .marca { width: 600px; }
-.fablab .tarja {
-  align-self: center; margin-top: 46px; color: #f7e9d9; font-size: 30px; font-weight: 700;
-  letter-spacing: .22em; text-transform: uppercase; text-align: center; line-height: 1.4; z-index: 2;
+.fablab {
+  background: linear-gradient(
+    180deg,
+    #5f356d 0%,
+    #7d4a8e 28%,
+    #a075ad 58%,
+    #ece0f0 100%
+  );
 }
-.fablab .msg { margin-top: 46px; }
-.fablab .msg span:nth-child(1), .fablab .msg span:nth-child(2) { color: #f7e9d9; }
-.fablab .rodape { margin-top: auto; padding-top: 64px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; z-index: 3; }
-.fablab .rodapeBong { width: 250px; display: block; }
-.fablab .rodapeFab { width: 210px; display: block; }
+.fablab .marca {
+  width: 600px;
+}
+.fablab .tarja {
+  align-self: center;
+  margin-top: 46px;
+  color: #f7e9d9;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+  z-index: 2;
+}
+.fablab .msg {
+  margin-top: 46px;
+}
+.fablab .msg span:nth-child(1),
+.fablab .msg span:nth-child(2) {
+  color: #f7e9d9;
+}
+.fablab .rodape {
+  margin-top: auto;
+  padding-top: 64px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  z-index: 3;
+}
+.fablab .rodapeBong {
+  width: 250px;
+  display: block;
+}
+.fablab .rodapeFab {
+  width: 210px;
+  display: block;
+}
