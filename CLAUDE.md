@@ -10,6 +10,8 @@ npm run dev                              # site em localhost:3000
 npm run build                            # build de produção (rode antes de commitar mudança de UI)
 npm run test                             # testes unitários e de componente (vitest, rápido)
 npm run test:e2e                         # build + Chromium headless de verdade (puppeteer, mais lento)
+npm run lint                             # Biome, só checa — é o que roda no CI
+npm run format                           # Biome, reformata o repositório
 
 python3 scripts/importar.py cronograma.xlsx                              # planilha → calendario.json
 python3 scripts/sincronizar_agenda.py --token ~/.config/bongarbit/token.json               # simula a sincronização
@@ -25,6 +27,9 @@ sobe o build de produção e dirige um Chromium headless real via Puppeteer —
 rasterização de imagem do `@zumer/snapdom` (`e2e/*.e2e.test.ts`). `next dev`
 recusa rodar duas instâncias no mesmo projeto, então os testes e2e sobem
 `next start` numa porta separada, nunca `next dev`.
+
+O CI (`.github/workflows/ci.yml`) roda `lint`, `build`, `test` e `test:e2e` a
+cada push e PR. Rode os quatro antes de pedir merge — o que falha lá falha aqui.
 
 ## 1. Sempre comece com `git pull`
 
@@ -60,13 +65,15 @@ feriados de fim de ano`, `Corrige o local do Café de novembro`.
 
 ```
   planilha .xlsx  ──►  content/calendario.json  ──►  site
-                              │
-                              └────────────────►  agenda do Google
+                              │                      ▲
+                              │                      │ só o horário do dia,
+                              ▼                      │ só para exibir
+                       agenda do Google  ────────────┘
 ```
 
 `content/calendario.json` é a fonte. O site e a agenda do Google são ambos
-derivados dele. **A agenda nunca é fonte**: o sincronizador só escreve nela,
-nunca lê dela para dentro do site.
+derivados dele. **A agenda nunca é fonte do que o calendário contém**: o
+sincronizador só escreve nela, nunca lê dela para dentro do JSON.
 
 Consequência prática: se alguém editar um evento direto no Google Agenda, a
 próxima sincronização desfaz a edição. Quando notar isso, avise antes de aplicar.
@@ -80,7 +87,7 @@ porque o navegador não pode buscar o `.ics` do Google direto (sem CORS). O
 primeiro HTML nunca espera por essa busca: [`components/HorariosContext.tsx`](components/HorariosContext.tsx)
 chama `/api/horarios` só depois que a página já apareceu, uma vez por
 carregamento, e guarda o resultado num Context (`carregando` → `pronto` ou
-`erro`) que `IndicadorHorario`, `DetalheProxima` e `CardDoDia` consultam. O
+`erro`) que `IndicadorHorario`, `DetalheProxima` e `ConviteDoDia` consultam. O
 horário real aparece **ao lado** da carga horária, nunca no lugar dela:
 enquanto carrega, um "···" pulsando; se a busca falhar, um "!" vermelho com
 tooltip; achando a data, o horário. Datas sem evento com horário (feriado, por
@@ -103,10 +110,24 @@ hoje de quem abre a página, não o momento do build.
   contagem de encontros e horas. `ID_AGENDA` está hardcoded em
   [`lib/agenda.ts`](lib/agenda.ts) — é o único lugar a mudar se a agenda
   pública trocar de ID.
-- [`components/Calendario.tsx`](components/Calendario.tsx) é o único client
-  component (`"use client"`): estado de filtro por trilha, alternância
-  lista/grade e mostrar/esconder aulas passadas. A grade de mês é montada à
-  mão (função `grade()`) a partir do primeiro domingo ao último sábado.
+- [`components/Calendario.tsx`](components/Calendario.tsx) guarda o estado de
+  filtro por trilha, a alternância lista/grade e mostrar/esconder aulas
+  passadas. A grade de mês é montada à mão (função `grade()`) a partir do
+  primeiro domingo ao último sábado.
+
+Cinco componentes são client (`"use client"`), e todos pelo mesmo motivo —
+dependem de estado, de evento ou do navegador:
+
+| Componente | Para quê |
+|---|---|
+| `Calendario` | filtro, vista lista/grade, dia aberto |
+| `HorariosContext` | busca `/api/horarios` depois do primeiro HTML e distribui o resultado |
+| `IndicadorHorario` | mostra o horário real ao lado da carga horária, ou o estado de carga/erro |
+| `DetalheProxima` | o mesmo, no destaque do próximo encontro |
+| `ConviteDoDia` | o convite de aula: modal, sorteio das frases e rasterização via `@zumer/snapdom` |
+
+O resto é server component. Em particular `hoje()` só roda no servidor, o que
+mantém a data vinda do fuso de Recife e não do relógio de quem abre a página.
 
 Mudança visual segue [`design.md`](design.md) — papel envelhecido, tipografia
 mono, cantos retos, cor semântica por trilha. Leia antes de mexer em CSS ou em
