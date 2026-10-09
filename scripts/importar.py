@@ -89,7 +89,27 @@ AJUSTES = {
     # A Trilha Empreendedora se divide: quartas no CACGB, sextas no Fab Lab Rec.
     # Os dois encontros de sexta saíram das quartas 14 e 28/10 — ver ACRESCENTAR.
     "2026-10-07": {"local": "CACGB"},
-    "2026-10-21": {"local": "CACGB"},
+    # O encontro (5) saiu da quarta 21/10 para a segunda 19/10, confirmado na
+    # agenda. As duas linhas trocam de conteúdo em vez de mudar de data: mover
+    # criaria duas entradas em 19/10, que na planilha é dia sem aula.
+    "2026-10-19": {
+        "titulo": "Encontro da Trilha de Educação Empreendedora (5)",
+        "trilha": "Trilha Empreendedora",
+        "cor": "var(--amarelo-ocre)",
+        "horas": 3.0,
+        "local": "CACGB",
+        "equipe": "Equipe Fab Lab Rec",
+        "semAula": False,
+    },
+    "2026-10-21": {
+        "titulo": "Não haverá aula",
+        "trilha": "Sem aula",
+        "cor": "var(--grafite-45)",
+        "horas": None,
+        "local": "CACGB",
+        "equipe": None,
+        "semAula": True,
+    },
     "2026-10-14": {"data": "2026-10-16", "diaDaSemana": "Sex", "local": "Fab Lab Rec"},
     "2026-10-28": {"data": "2026-10-30", "diaDaSemana": "Sex", "local": "Fab Lab Rec"},
 }

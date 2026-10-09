@@ -40,9 +40,9 @@ export default function Pagina() {
             Os encontros da escola de luteria, de setembro em diante. As aulas
             de luteria, orgânica e digital, são no <strong>CACGB</strong>, às
             segundas e quartas. Outubro é sobretudo da Trilha Empreendedora, que
-            se divide entre as <strong>quartas no CACGB</strong> (7 e 21) e as{" "}
-            <strong>sextas no Fab Lab Rec</strong> (16 e 30) — endereço
-            diferente, fique atento. Fora isso, o mês tem a aula de Berimbau da
+            se divide entre o <strong>CACGB</strong> (quarta 7 e segunda 19) e o{" "}
+            <strong>Fab Lab Rec</strong> (sextas 16 e 30) — endereço diferente,
+            fique atento. Fora isso, o mês tem a aula de Berimbau da
             segunda 5 e a <strong>Vivência na Mata</strong>, no sábado 10, em
             Camaragibe Velho. Os Cafés com Bongarbit acontecem aos sábados, na
             Cabaça do CACGB — menos o de novembro, que é na Aldeia Povo

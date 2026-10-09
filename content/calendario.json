@@ -258,20 +258,6 @@
         {
           "data": "2026-10-19",
           "diaDaSemana": "Seg",
-          "titulo": "Não haverá aula",
-          "descricao": null,
-          "topico": null,
-          "trilha": "Sem aula",
-          "cor": "var(--grafite-45)",
-          "horas": null,
-          "local": "CACGB",
-          "equipe": "João, Thúlio, Educadores e Monitores",
-          "modulo": "Módulo 2",
-          "semAula": true
-        },
-        {
-          "data": "2026-10-21",
-          "diaDaSemana": "Qua",
           "titulo": "Encontro da Trilha de Educação Empreendedora (5)",
           "descricao": null,
           "topico": null,
@@ -282,6 +268,20 @@
           "equipe": "Equipe Fab Lab Rec",
           "modulo": "Módulo 2",
           "semAula": false
+        },
+        {
+          "data": "2026-10-21",
+          "diaDaSemana": "Qua",
+          "titulo": "Não haverá aula",
+          "descricao": null,
+          "topico": null,
+          "trilha": "Sem aula",
+          "cor": "var(--grafite-45)",
+          "horas": null,
+          "local": "CACGB",
+          "equipe": null,
+          "modulo": "Módulo 2",
+          "semAula": true
         },
         {
           "data": "2026-10-26",
