@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { BASE, ESTATICO } from "@/lib/base";
 
 export type EstadoHorarios =
   | { status: "carregando" }
@@ -33,7 +34,7 @@ export function ProvedorHorarios({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelado = false;
 
-    fetch("/api/horarios")
+    fetch(ESTATICO ? `${BASE}/horarios.json` : "/api/horarios")
       .then((resposta) => {
         if (!resposta.ok) throw new Error("resposta não ok");
         return resposta.json();

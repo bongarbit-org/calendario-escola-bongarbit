@@ -1,0 +1,51 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # "Hoje" e o horário real são calculados no build: reconstruir logo depois da
+  # meia-noite de Recife (03h UTC) e algumas vezes ao dia mantém o site em dia.
+  schedule:
+    - cron: "30 3,9,15,21 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: node --experimental-strip-types scripts/gerar_horarios.mts
+      # Site estático não tem servidor: sem a rota /api (o horário vai em
+      # horarios.json) e sem force-dynamic (a página é gerada no build).
+      - run: rm -r app/api
+      - run: sed -i '/force-dynamic/d' app/page.tsx
+      - run: npm run build
+        env:
+          GITHUB_PAGES: "1"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

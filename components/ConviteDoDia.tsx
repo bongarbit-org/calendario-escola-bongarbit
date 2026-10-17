@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useHorarios } from "@/components/HorariosContext";
+import { BASE } from "@/lib/base";
 import type { Aula } from "@/lib/calendario";
 import {
   diaDataDeAula,
@@ -149,7 +150,7 @@ function Cartao({
         <>
           <img
             className={styles.marca}
-            src="/img/cartao/bongarbit-lockup-horizontal.png"
+            src={`${BASE}/img/cartao/bongarbit-lockup-horizontal.png`}
             alt=""
           />
           <div
@@ -166,7 +167,7 @@ function Cartao({
           </div>
           <img
             className={styles.vila}
-            src="/img/cartao/faixa-vila.png"
+            src={`${BASE}/img/cartao/faixa-vila.png`}
             alt=""
           />
         </>
@@ -174,7 +175,7 @@ function Cartao({
         <>
           <img
             className={styles.marca}
-            src="/img/cartao/bongarbit-lettering-negativo.png"
+            src={`${BASE}/img/cartao/bongarbit-lettering-negativo.png`}
             alt=""
           />
           <div className={styles.tarja}>
@@ -189,12 +190,12 @@ function Cartao({
           <div className={styles.rodape}>
             <img
               className={styles.rodapeBong}
-              src="/img/cartao/bongarbit-lettering-negativo.png"
+              src={`${BASE}/img/cartao/bongarbit-lettering-negativo.png`}
               alt=""
             />
             <img
               className={styles.rodapeFab}
-              src="/img/cartao/fablab-rec-empilhado-branco.png"
+              src={`${BASE}/img/cartao/fablab-rec-empilhado-branco.png`}
               alt=""
             />
           </div>
@@ -202,7 +203,7 @@ function Cartao({
       )}
       <img
         className={styles.borda}
-        src="/img/cartao/borda-instagram.png"
+        src={`${BASE}/img/cartao/borda-instagram.png`}
         alt=""
       />
     </div>
