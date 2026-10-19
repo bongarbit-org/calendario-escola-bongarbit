@@ -80,6 +80,10 @@ HORARIOS = {
     "2026-10-10": ("11:00", "20:00"),
     # Aula extra de Berimbau: 18h às 21h, o horário padrão das aulas.
     "2026-10-05": ("21:00", "00:00"),
+    # Formação de Agentes Culturais: 18h às 21h.
+    "2026-10-21": ("21:00", "00:00"),
+    # Oficina de Produção Cultural: 9h às 17h.
+    "2026-10-24": ("12:00", "20:00"),
 }
 
 # As linhas da descrição que este script governa. O resto é preservado.
