@@ -57,6 +57,8 @@ outubro?"): responder a partir de uma cópia velha é pior que não responder.
   linhas.
 - Commite quando o usuário pedir. Faça `push` em seguida, já que outras pessoas
   têm acesso ao repositório.
+- O `origin` é `github.com/bongarbit-org/calendario-escola-bongarbit` (público),
+  não mais `bongarbit/…`. Cada `push` no `main` já publica o site (ver §4).
 
 Bons assuntos: `Move a Trilha Empreendedora para as sextas`, `Acrescenta os
 feriados de fim de ano`, `Corrige o local do Café de novembro`.
@@ -129,6 +131,27 @@ dependem de estado, de evento ou do navegador:
 O resto é server component. Em particular `hoje()` só roda no servidor, o que
 mantém a data vinda do fuso de Recife e não do relógio de quem abre a página.
 
+### Publicação: GitHub Pages
+
+O site também é publicado como página estática em
+`https://bongarbit-org.github.io/calendario-escola-bongarbit/`, por
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml): a cada `push` no
+`main`, manualmente (`gh workflow run pages.yml`) e às 00h30, 06h30, 12h30 e
+18h30 de Recife. Como não há servidor, o workflow:
+
+- roda [`scripts/gerar_horarios.mts`](scripts/gerar_horarios.mts), que baixa o
+  `.ics` e grava `public/horarios.json` (o que `/api/horarios` faz na Vercel);
+- apaga `app/api` e a linha `force-dynamic` de `app/page.tsx` — só na cópia do
+  runner, nunca no repositório;
+- builda com `GITHUB_PAGES=1` (`output: "export"`, `basePath`
+  `/calendario-escola-bongarbit`, ver `next.config.mjs`).
+
+Consequências: "hoje" e o horário só mudam na próxima reconstrução; caminhos de
+`public/` precisam do prefixo `BASE` de [`lib/base.ts`](lib/base.ts) (as fontes
+usam `url("../public/fonts/…")` no CSS por isso). Para testar o build estático
+localmente, copie `app/` para fora, apague `app/api` e `force-dynamic`, rode
+`GITHUB_PAGES=1 npm run build` e restaure — nunca commite `app/` sem a rota.
+
 Mudança visual segue [`design.md`](design.md) — papel envelhecido, tipografia
 mono, cantos retos, cor semântica por trilha. Leia antes de mexer em CSS ou em
 como uma informação é apresentada.
@@ -159,6 +182,12 @@ Qual constante usar:
 | uma entrada que a planilha não tem | `ACRESCENTAR` |
 | feriado | `FERIADOS` |
 | classificação de trilha pelo nome | `TRILHAS` |
+| trilha nova | `TRILHAS` **e** `CORES` (uma cor ainda não usada, de `globals.css`) e, no JSON, `trilhas` e a `cor` de cada entrada |
+
+Nome de trilha longo vira etiqueta larga: confira no celular (o e2e acusa
+rolagem lateral). O convite do dia (`lib/card.ts`, `ConviteDoDia`) só diz
+"HOJE · dia/mês", sem dia da semana; ao mexer nele, gere o cartão num Chromium
+de verdade e olhe a imagem, porque a rasterização difere do layout.
 
 ## 6. Verificar diferenças entre o site e a agenda
 
@@ -237,7 +266,12 @@ aula. Nunca rode `--aplicar` sem antes mostrar a simulação ao usuário.
 Criar é opt-in: `--criar` cria na agenda os eventos que existem no site e faltam
 lá, e só para as datas com horário declarado em `HORARIOS`. O site guarda data e
 carga horária, não hora do dia — sem horário declarado, o script recusa a criação
-em vez de inventar hora.
+em vez de inventar hora. Os horários de `HORARIOS` são em **UTC**
+(Recife + 3h): 18h–21h vira `("21:00", "00:00")`, 9h–17h vira `("12:00", "20:00")`.
+Um evento novo no site entra assim: horário em `HORARIOS` → simulação com
+`--criar` → mostrar → `--criar --aplicar` → simulação de novo (`0 eventos a
+atualizar`) → conferir o `.ics`. Mudar a trilha de um evento já criado também
+aparece na simulação, como diferença de "descrição".
 
 As bibliotecas do Google (`google-api-python-client`, `google-auth-oauthlib`) e o
 `openpyxl` precisam estar no interpretador que você usar. Confira antes de
@@ -250,9 +284,14 @@ concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
 3. `npm run build`
 4. Conferir o resultado no HTML servido, não só no JSON
 5. Commit simples e `git push`
-6. `npx vercel deploy --prod --yes`
-7. Verificar no ar
+6. O `push` já dispara o GitHub Pages: acompanhe com
+   `gh run watch <id> -R bongarbit-org/calendario-escola-bongarbit` (o id sai de
+   `gh run list -w pages.yml`)
+7. Verificar no ar, em `bongarbit-org.github.io/calendario-escola-bongarbit/`
 8. Sincronizar a agenda, com simulação antes
+
+A Vercel (`npx vercel deploy --prod --yes`) continua configurada no projeto;
+rode o deploy dela só se o usuário pedir.
 
 ## 9. Segredos
 
