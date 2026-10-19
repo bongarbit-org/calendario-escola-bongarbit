@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { BASE, ESTATICO } from "@/lib/base";
+import { BASE } from "@/lib/base";
 
 export type EstadoHorarios =
   | { status: "carregando" }
@@ -23,8 +23,8 @@ export function useHorarios(): EstadoHorarios {
 }
 
 /**
- * Busca /api/horarios (que por sua vez busca o .ics público) uma única vez,
- * depois que a página já apareceu — nunca atrasa o primeiro HTML. Enquanto
+ * Busca horarios.json (gerado no build a partir do .ics público, ver
+ * scripts/gerar_horarios.mts) uma única vez, depois que a página já apareceu — nunca atrasa o primeiro HTML. Enquanto
  * carrega ou se falhar, quem consome (IndicadorHorario, DetalheProxima,
  * CardDoDia) cai de volta na carga horária / no horário padrão.
  */
@@ -34,7 +34,7 @@ export function ProvedorHorarios({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelado = false;
 
-    fetch(ESTATICO ? `${BASE}/horarios.json` : "/api/horarios")
+    fetch(`${BASE}/horarios.json`)
       .then((resposta) => {
         if (!resposta.ok) throw new Error("resposta não ok");
         return resposta.json();

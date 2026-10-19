@@ -28,14 +28,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: node --experimental-strip-types scripts/gerar_horarios.mts
-      # Site estático não tem servidor: sem a rota /api (o horário vai em
-      # horarios.json) e sem force-dynamic (a página é gerada no build).
-      - run: rm -r app/api
-      - run: sed -i '/force-dynamic/d' app/page.tsx
+      # O prebuild gera o horarios.json a partir do .ics público.
       - run: npm run build
-        env:
-          GITHUB_PAGES: "1"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

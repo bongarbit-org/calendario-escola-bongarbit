@@ -11,7 +11,7 @@ export const ID_AGENDA =
   "b066261daf2a5e9b5a30c0e7765f8e851572c5c5b31382976ae761f88e42bd1c@group.calendar.google.com";
 export const AGENDA_GOOGLE = `https://calendar.google.com/calendar/u/0?cid=${Buffer.from(ID_AGENDA).toString("base64")}`;
 // iPhone, Outlook e qualquer outro leitor de .ics assinam por aqui — e é o
-// mesmo .ics que app/api/horarios busca para extrair o horário real.
+// mesmo .ics de onde scripts/gerar_horarios.mts extrai o horário real.
 export const AGENDA_ICS = `https://calendar.google.com/calendar/ical/${encodeURIComponent(ID_AGENDA)}/public/basic.ics`;
 
 const TRES_HORAS_MS = 3 * 60 * 60 * 1000;

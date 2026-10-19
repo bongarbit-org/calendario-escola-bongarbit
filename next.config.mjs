@@ -1,19 +1,18 @@
-// GITHUB_PAGES=1 gera um site estático (out/) para o GitHub Pages, que mora em
-// /calendario-escola-bongarbit. Sem a variável, é o build normal da Vercel.
-const pages = process.env.GITHUB_PAGES === "1";
-const base = pages ? "/calendario-escola-bongarbit" : "";
+// O site é sempre estático (out/): vai para o GitHub Pages, que serve o projeto
+// em /calendario-escola-bongarbit. No `next dev` o prefixo some, para abrir em
+// localhost:3000. NEXT_BASE_PATH e NEXT_DIST_DIR existem para os testes e2e, que
+// servem cada build na raiz e numa pasta própria.
+const base =
+  process.env.NEXT_BASE_PATH ??
+  (process.env.NODE_ENV === "production" ? "/calendario-escola-bongarbit" : "");
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  ...(pages && {
-    output: "export",
-    basePath: base,
-    images: { unoptimized: true },
-  }),
-  env: {
-    NEXT_PUBLIC_BASE_PATH: base,
-    NEXT_PUBLIC_ESTATICO: pages ? "1" : "0",
-  },
+  output: "export",
+  images: { unoptimized: true },
+  ...(base && { basePath: base }),
+  ...(process.env.NEXT_DIST_DIR && { distDir: process.env.NEXT_DIST_DIR }),
+  env: { NEXT_PUBLIC_BASE_PATH: base },
 };
 export default nextConfig;

@@ -109,13 +109,14 @@ apaga tudo. Uma linha numa constante sobrevive.
 
 ## O site
 
-Next.js com React, sem dependência além disso. Renderiza no servidor a cada
-requisição, para que "hoje" seja o hoje de quem abre a página.
+Next.js com React, sem dependência além disso. O site é estático: o build
+fixa o "hoje" no fuso de Recife e o GitHub Pages o reconstrói algumas vezes por
+dia, para que a data se mantenha em dia.
 
 ```sh
 npm install
 npm run dev     # desenvolvimento
-npm run build   # produção
+npm run build   # produção: gera out/
 ```
 
 O que o aluno encontra:
@@ -203,18 +204,18 @@ outra agenda, senão ele tentará mover datas que não existem.
 ### Segredos
 
 Token e client secret **nunca** entram no repositório. O
-`.gitignore` e o `.vercelignore` barram `token.json`, `credentials.json` e
+`.gitignore` barra `token.json`, `credentials.json` e
 `client_secret*.json`, mas o hábito certo é guardá-los em outro lugar, como
 `~/.config/`, e apontar o script para lá.
 
 ## Publicar
 
-Qualquer hospedagem que rode Next.js serve. Com a Vercel:
-
-```sh
-npm run build
-npx vercel deploy --prod
-```
+O site é estático e vai para o GitHub Pages. O workflow
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) publica a cada
+`push` no `main` e algumas vezes ao dia, para atualizar o "hoje" e o horário
+real. Para ativar num repositório novo: *Settings → Pages → Source: GitHub
+Actions*. Qualquer outra hospedagem de arquivos estáticos também serve: basta
+publicar a pasta `out/` (ajuste o `basePath` em `next.config.mjs`).
 
 O ciclo completo de uma atualização: baixar a planilha, rodar o importador,
 conferir o JSON gerado, publicar o site e, se houver agenda, sincronizá-la.

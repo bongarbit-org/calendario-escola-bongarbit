@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "npm run horarios",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "prebuild": "npm run horarios",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:e2e": "next build",
+    "pretest:e2e": "npm run horarios",
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "lint": "biome ci .",
-    "format": "biome check --write ."
+    "format": "biome check --write .",
+    "horarios": "node --experimental-strip-types --no-warnings scripts/gerar_horarios.mts"
   },
   "dependencies": {
     "@zumer/snapdom": "2.24.1",

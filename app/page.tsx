@@ -17,8 +17,6 @@ import {
 } from "@/lib/calendario";
 import { temConvite } from "@/lib/card";
 
-export const dynamic = "force-dynamic";
-
 export default function Pagina() {
   const h = hoje();
   const proxima = proximaAula();

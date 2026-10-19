@@ -1,18 +1,18 @@
 node_modules/
 .next/
-.vercel/
 next-env.d.ts
 .env*.local
 tsconfig.tsbuildinfo
 .DS_Store
 *.xlsx
-.vercel
 .env*
 
 # Credenciais do Google. Nunca versionar: o repositório é público na origem
-# e sobe inteiro para a Vercel.
+# e é publicado inteiro no GitHub Pages.
 token.json
 credentials.json
 client_secret*.json
 .claude/scheduled_tasks.lock
 public/horarios.json
+.e2e-*/
+out/

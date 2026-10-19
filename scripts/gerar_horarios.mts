@@ -1,6 +1,7 @@
-// Só para o GitHub Pages (sem servidor): baixa o .ics público e grava
-// public/horarios.json — o mesmo mapa data -> horário que /api/horarios serve
-// na Vercel. Se a busca falhar, não grava nada: o site mostra o "!" de erro.
+// O site é estático e o navegador não pode buscar o .ics (o Google não manda
+// CORS): este script baixa o .ics público e grava public/horarios.json, o mapa
+// data -> horário que o site lê. Roda antes do dev e do build. Se a busca
+// falhar, não grava nada: o site mostra o "!" de erro.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { AGENDA_ICS, buscarHorarios } from "../lib/agenda.ts";
 

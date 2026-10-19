@@ -14,7 +14,7 @@ diverge. Este script reconcilia as duas.
 O token precisa do escopo https://www.googleapis.com/auth/calendar. Sem token,
 passe --credenciais com o client secret e o script abre o navegador uma vez,
 gravando o token no caminho de --token. Nenhum desses arquivos mora neste
-repositório — ele é público e vai para a Vercel.
+repositório — ele é público.
 
 Para outra agenda, passe --agenda com o ID dela (Configurações da agenda no
 Google > Integrar agenda > ID da agenda). Ver o README.

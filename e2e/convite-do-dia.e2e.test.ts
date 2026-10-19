@@ -1,4 +1,3 @@
-import { type ChildProcess, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import puppeteer, {
   type Browser,
@@ -7,12 +6,13 @@ import puppeteer, {
   PredefinedNetworkConditions,
 } from "puppeteer";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { type Site, subirSite } from "./site-estatico";
 
 /**
- * E2E de verdade: sobe o build de produção do site, abre num Chromium headless
+ * E2E de verdade: gera o site estático, serve-o e abre num Chromium headless
  * real e clica no botão "Visualizar convite" — inclusive a rasterização de @zumer/snapdom,
  * que o jsdom dos testes de componente não consegue exercitar (não há canvas
- * real ali). "Hoje" é fixado via CALENDARIO_HOJE_TESTE (lib/calendario.ts),
+ * real ali). "Hoje" é fixado via CALENDARIO_HOJE_TESTE (lib/calendario.ts), lido no build,
  * lendo datas reais de content/calendario.json para não depender do dia em
  * que o teste roda.
  */
@@ -77,51 +77,13 @@ async function clicarPorTexto(page: Page, texto: string): Promise<void> {
 const PORTA_COM_AULA = 3911;
 const PORTA_FERIADO = 3912;
 
-async function subirServidor(
-  porta: number,
-  hoje: string,
-): Promise<ChildProcess> {
-  // `next dev` recusa rodar duas instâncias no mesmo diretório de projeto (mesmo em
-  // portas diferentes) quando já há uma de pé — como a do preview do navegador usado
-  // durante o desenvolvimento. `next start`, sobre o build de produção, não tem essa
-  // trava, então é o que os testes e2e usam.
-  const processo = spawn("npx", ["next", "start", "-p", String(porta)], {
-    cwd: new URL("..", import.meta.url).pathname,
-    env: { ...process.env, CALENDARIO_HOJE_TESTE: hoje },
-    detached: true,
-    stdio: "ignore",
-  });
-
-  const prazo = Date.now() + 45_000;
-  while (Date.now() < prazo) {
-    try {
-      const r = await fetch(`http://localhost:${porta}/`);
-      if (r.ok) return processo;
-    } catch {
-      // servidor ainda não subiu
-    }
-    await new Promise((r) => setTimeout(r, 400));
-  }
-  throw new Error(`Servidor de teste não respondeu na porta ${porta} a tempo.`);
-}
-
-function derrubarServidor(processo: ChildProcess) {
-  if (processo.pid) {
-    try {
-      process.kill(-processo.pid, "SIGTERM");
-    } catch {
-      // já não existe
-    }
-  }
-}
-
 describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
-  let servidor: ChildProcess;
+  let site: Site;
   let browser: Browser;
   let page: Page;
 
   beforeAll(async () => {
-    servidor = await subirServidor(PORTA_COM_AULA, DATA_COM_AULA);
+    site = await subirSite(PORTA_COM_AULA, DATA_COM_AULA);
     browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -134,7 +96,7 @@ describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
 
   afterAll(async () => {
     await browser?.close();
-    if (servidor) derrubarServidor(servidor);
+    await site?.fechar();
   });
 
   it("mostra o botão Visualizar convite", async () => {
@@ -228,12 +190,12 @@ describe("ConviteDoDia — Chromium real, hoje é dia de aula", () => {
 });
 
 describe("ConviteDoDia — Chromium real, hoje é feriado numa segunda/quarta", () => {
-  let servidor: ChildProcess;
+  let site: Site;
   let browser: Browser;
   let page: Page;
 
   beforeAll(async () => {
-    servidor = await subirServidor(PORTA_FERIADO, DATA_FERIADO_SEG_QUA);
+    site = await subirSite(PORTA_FERIADO, DATA_FERIADO_SEG_QUA);
     browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -246,7 +208,7 @@ describe("ConviteDoDia — Chromium real, hoje é feriado numa segunda/quarta", 
 
   afterAll(async () => {
     await browser?.close();
-    if (servidor) derrubarServidor(servidor);
+    await site?.fechar();
   });
 
   it("não mostra o botão, mesmo sendo segunda/quarta, porque não há aula", async () => {
@@ -282,12 +244,12 @@ async function clicarAteAbrirModal(page: Page, tentativas = 40): Promise<void> {
 const PORTA_MOBILE_LENTA = 3913;
 
 describe("ConviteDoDia — mobile e conexão lenta (Chromium real)", () => {
-  let servidor: ChildProcess;
+  let site: Site;
   let browser: Browser;
   let page: Page;
 
   beforeAll(async () => {
-    servidor = await subirServidor(PORTA_MOBILE_LENTA, DATA_COM_AULA);
+    site = await subirSite(PORTA_MOBILE_LENTA, DATA_COM_AULA);
     browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -310,7 +272,7 @@ describe("ConviteDoDia — mobile e conexão lenta (Chromium real)", () => {
 
   afterAll(async () => {
     await browser?.close();
-    if (servidor) derrubarServidor(servidor);
+    await site?.fechar();
   });
 
   it("gera o convite, não mexe na fila só de visualizar, e só avança com 'gerar novamente'", async () => {

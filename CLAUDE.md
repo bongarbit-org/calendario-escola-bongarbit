@@ -7,7 +7,8 @@ Instruções para o Claude Code neste repositório.
 ```sh
 npm install                              # dependências do site
 npm run dev                              # site em localhost:3000
-npm run build                            # build de produção (rode antes de commitar mudança de UI)
+npm run build                            # build estático em out/ (rode antes de commitar mudança de UI)
+npm run horarios                         # baixa o .ics e grava public/horarios.json (dev e build já chamam)
 npm run test                             # testes unitários e de componente (vitest, rápido)
 npm run test:e2e                         # build + Chromium headless de verdade (puppeteer, mais lento)
 npm run lint                             # Biome, só checa — é o que roda no CI
@@ -22,11 +23,13 @@ python3 -c "import googleapiclient, openpyxl"   # confirma que as libs Python es
 
 `npm run test` cobre funções puras (`lib/*.test.ts`) e renderização de componente
 (`components/*.test.tsx`, jsdom, sem browser de verdade). `npm run test:e2e`
-sobe o build de produção e dirige um Chromium headless real via Puppeteer —
+gera o site estático, serve-o e dirige um Chromium headless real via Puppeteer —
 é o único jeito de testar coisas que dependem de um browser de verdade, como a
-rasterização de imagem do `@zumer/snapdom` (`e2e/*.e2e.test.ts`). `next dev`
-recusa rodar duas instâncias no mesmo projeto, então os testes e2e sobem
-`next start` numa porta separada, nunca `next dev`.
+rasterização de imagem do `@zumer/snapdom` (`e2e/*.e2e.test.ts`). Como "hoje"
+é fixado no build (`CALENDARIO_HOJE_TESTE`), [`e2e/site-estatico.ts`](e2e/site-estatico.ts)
+faz um build por data, cada um na própria pasta `.e2e-<porta>/` (apagada ao
+fim), e o serve na raiz de uma porta — nunca `next dev`, que recusa duas
+instâncias no mesmo projeto.
 
 O CI (`.github/workflows/ci.yml`) roda `lint`, `build`, `test` e `test:e2e` a
 cada push e PR. Rode os quatro antes de pedir merge — o que falha lá falha aqui.
@@ -84,10 +87,11 @@ próxima sincronização desfaz a edição. Quando notar isso, avise antes de ap
 (carga horária, ex. `3`), não horário de verdade — a planilha não traz isso.
 [`lib/agenda.ts`](lib/agenda.ts) sabe extrair o horário real do `.ics` público
 (`horariosPorData`/`buscarHorarios`), mas quem o chama é só
-[`app/api/horarios/route.ts`](app/api/horarios/route.ts) — uma rota interna,
-porque o navegador não pode buscar o `.ics` do Google direto (sem CORS). O
-primeiro HTML nunca espera por essa busca: [`components/HorariosContext.tsx`](components/HorariosContext.tsx)
-chama `/api/horarios` só depois que a página já apareceu, uma vez por
+[`scripts/gerar_horarios.mts`](scripts/gerar_horarios.mts), no `npm run
+horarios` (antes do `dev` e do `build`), que grava `public/horarios.json` —
+o navegador não pode buscar o `.ics` do Google direto (sem CORS) e o site não
+tem servidor. A página não espera por esse arquivo: [`components/HorariosContext.tsx`](components/HorariosContext.tsx)
+busca `horarios.json` só depois que a página já apareceu, uma vez por
 carregamento, e guarda o resultado num Context (`carregando` → `pronto` ou
 `erro`) que `IndicadorHorario`, `DetalheProxima` e `ConviteDoDia` consultam. O
 horário real aparece **ao lado** da carga horária, nunca no lugar dela:
@@ -98,16 +102,15 @@ volta nem alimenta o JSON — é exibição, não sincronização.
 
 ## 4. Arquitetura do site
 
-Next.js (App Router). O site no ar é **estático**, gerado no GitHub Pages (ver
-"Publicação" abaixo). O código ainda sabe rodar com servidor: em `npm run dev` e
-`npm start`, [`app/page.tsx`](app/page.tsx) é renderizado a cada requisição
-(`export const dynamic = "force-dynamic"`) e `/api/horarios` serve o horário.
-No Pages, "hoje" é o do momento do build.
+Next.js (App Router), sempre **estático** (`output: "export"`): o build gera
+`out/`, que o GitHub Pages serve (ver "Publicação" abaixo). Não há servidor nem
+rota de API. "Hoje" é o do momento do build; só no `npm run dev` ele é
+recalculado a cada requisição.
 
 - [`lib/calendario.ts`](lib/calendario.ts) importa `content/calendario.json`
   direto (não via `fetch`) e expõe os tipos (`Aula`, `Mes`) e as funções
   puras usadas pelo resto do site: `hoje()` calcula a data no fuso de Recife
-  porque o servidor roda em UTC; `proximaAula()`, `quantosDias()`,
+  porque o build roda em UTC; `proximaAula()`, `quantosDias()`,
   `emPalavras()` e `horasDe()` formatam o que aparece na tela.
 - [`app/page.tsx`](app/page.tsx) é a página única do site: cabeçalho, destaque
   do próximo encontro, botões de assinatura da agenda e o rodapé com a
@@ -125,12 +128,12 @@ dependem de estado, de evento ou do navegador:
 | Componente | Para quê |
 |---|---|
 | `Calendario` | filtro, vista lista/grade, dia aberto |
-| `HorariosContext` | busca `/api/horarios` depois do primeiro HTML e distribui o resultado |
+| `HorariosContext` | busca `horarios.json` depois do primeiro HTML e distribui o resultado |
 | `IndicadorHorario` | mostra o horário real ao lado da carga horária, ou o estado de carga/erro |
 | `DetalheProxima` | o mesmo, no destaque do próximo encontro |
 | `ConviteDoDia` | o convite de aula: modal, sorteio das frases e rasterização via `@zumer/snapdom` |
 
-O resto é server component. Em particular `hoje()` só roda no servidor, o que
+O resto é server component. Em particular `hoje()` só roda no build, o que
 mantém a data vinda do fuso de Recife e não do relógio de quem abre a página.
 
 ### Publicação: GitHub Pages
@@ -139,20 +142,15 @@ O site é publicado como página estática em
 `https://bongarbit-org.github.io/calendario-escola-bongarbit/`, por
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml): a cada `push` no
 `main`, manualmente (`gh workflow run pages.yml`) e às 00h30, 06h30, 12h30 e
-18h30 de Recife. Como não há servidor, o workflow:
-
-- roda [`scripts/gerar_horarios.mts`](scripts/gerar_horarios.mts), que baixa o
-  `.ics` e grava `public/horarios.json` (o que `/api/horarios` faz com servidor);
-- apaga `app/api` e a linha `force-dynamic` de `app/page.tsx` — só na cópia do
-  runner, nunca no repositório;
-- builda com `GITHUB_PAGES=1` (`output: "export"`, `basePath`
-  `/calendario-escola-bongarbit`, ver `next.config.mjs`).
+18h30 de Recife. O workflow só instala e roda `npm run build`, cujo `prebuild`
+gera o `horarios.json`; o `basePath` `/calendario-escola-bongarbit` vem de
+`next.config.mjs` (só em produção; no `dev` é vazio).
 
 Consequências: "hoje" e o horário só mudam na próxima reconstrução; caminhos de
 `public/` precisam do prefixo `BASE` de [`lib/base.ts`](lib/base.ts) (as fontes
-usam `url("../public/fonts/…")` no CSS por isso). Para testar o build estático
-localmente, copie `app/` para fora, apague `app/api` e `force-dynamic`, rode
-`GITHUB_PAGES=1 npm run build` e restaure — nunca commite `app/` sem a rota.
+usam `url("../public/fonts/…")` no CSS por isso). Para ver o build como o Pages
+o serve, abra `out/` sob o prefixo — ou, mais simples, confie no e2e, que o
+serve na raiz.
 
 Mudança visual segue [`design.md`](design.md) — papel envelhecido, tipografia
 mono, cantos retos, cor semântica por trilha. Leia antes de mexer em CSS ou em
@@ -305,3 +303,13 @@ Alterou o site? Confira o HTML que o servidor devolve, não o JSON de entrada.
 Alterou a agenda? Baixe o `.ics` de novo e confirme. Afirmar que algo funcionou
 sem ter olhado é o pior resultado possível aqui, porque o calendário é público e
 os alunos se organizam por ele.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
