@@ -98,9 +98,11 @@ volta nem alimenta o JSON — é exibição, não sincronização.
 
 ## 4. Arquitetura do site
 
-Next.js (App Router) renderizado a cada requisição (`export const dynamic =
-"force-dynamic"` em [`app/page.tsx`](app/page.tsx)), para que "hoje" seja o
-hoje de quem abre a página, não o momento do build.
+Next.js (App Router). O site no ar é **estático**, gerado no GitHub Pages (ver
+"Publicação" abaixo). O código ainda sabe rodar com servidor: em `npm run dev` e
+`npm start`, [`app/page.tsx`](app/page.tsx) é renderizado a cada requisição
+(`export const dynamic = "force-dynamic"`) e `/api/horarios` serve o horário.
+No Pages, "hoje" é o do momento do build.
 
 - [`lib/calendario.ts`](lib/calendario.ts) importa `content/calendario.json`
   direto (não via `fetch`) e expõe os tipos (`Aula`, `Mes`) e as funções
@@ -133,14 +135,14 @@ mantém a data vinda do fuso de Recife e não do relógio de quem abre a página
 
 ### Publicação: GitHub Pages
 
-O site também é publicado como página estática em
+O site é publicado como página estática em
 `https://bongarbit-org.github.io/calendario-escola-bongarbit/`, por
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml): a cada `push` no
 `main`, manualmente (`gh workflow run pages.yml`) e às 00h30, 06h30, 12h30 e
 18h30 de Recife. Como não há servidor, o workflow:
 
 - roda [`scripts/gerar_horarios.mts`](scripts/gerar_horarios.mts), que baixa o
-  `.ics` e grava `public/horarios.json` (o que `/api/horarios` faz na Vercel);
+  `.ics` e grava `public/horarios.json` (o que `/api/horarios` faz com servidor);
 - apaga `app/api` e a linha `force-dynamic` de `app/page.tsx` — só na cópia do
   runner, nunca no repositório;
 - builda com `GITHUB_PAGES=1` (`output: "export"`, `basePath`
@@ -289,9 +291,6 @@ concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
    `gh run list -w pages.yml`)
 7. Verificar no ar, em `bongarbit-org.github.io/calendario-escola-bongarbit/`
 8. Sincronizar a agenda, com simulação antes
-
-A Vercel (`npx vercel deploy --prod --yes`) continua configurada no projeto;
-rode o deploy dela só se o usuário pedir.
 
 ## 9. Segredos
 
