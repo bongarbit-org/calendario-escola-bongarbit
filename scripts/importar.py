@@ -35,6 +35,9 @@ TRILHAS = [
     ("Luteria Orgânica", ("tambor falante", "berimbau", "engome", "agbê", "agbe", "gonguê")),
     ("Trilha Empreendedora", ("trilha de educação empreendedora",)),
     ("Eventos Abertos", ("café com bongarbit", "show de culminância")),
+    # Fora da planilha: as entradas vêm de AJUSTES e ACRESCENTAR, com a trilha
+    # declarada. A entrada aqui existe para a trilha aparecer no filtro.
+    ("Projeto Formação de Agentes Culturais", ("formação de agentes culturais",)),
 ]
 
 # A coluna "Equipe" da planilha traz sempre a mesma lista genérica; quem de fato
@@ -106,8 +109,8 @@ AJUSTES = {
     "2026-10-21": {
         "titulo": "Formação de Agentes Culturais - Xambá",
         "descricao": "Mesa mediada por Thúlio Xambá, com participação de Pai Ivo, Marileide Alves e Cannibal.",
-        "trilha": "Eventos Abertos",
-        "cor": "var(--terracota-queimada)",
+        "trilha": "Projeto Formação de Agentes Culturais",
+        "cor": "var(--marrom-terra)",
         "horas": 3.0,
         "local": "CACGB",
         "equipe": "Thúlio Xambá, Pai Ivo, Marileide Alves e Cannibal",
@@ -142,7 +145,7 @@ ACRESCENTAR = [
         "data": "2026-10-24",
         "diaDaSemana": "Sáb",
         "titulo": "Oficina de Produção Cultural",
-        "trilha": "Eventos Abertos",
+        "trilha": "Projeto Formação de Agentes Culturais",
         "horas": 8.0,
         "equipe": "Belise Alves",
     },
@@ -194,6 +197,7 @@ CORES = {
     "Luteria Digital": "var(--azul-caixa-dagua)",
     "Trilha Empreendedora": "var(--amarelo-ocre)",
     "Eventos Abertos": "var(--terracota-queimada)",
+    "Projeto Formação de Agentes Culturais": "var(--marrom-terra)",
     "Sem aula": "var(--grafite-45)",
     "Feriado": "var(--grafite-45)",
 }

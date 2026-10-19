@@ -18,6 +18,10 @@
     {
       "nome": "Eventos Abertos",
       "cor": "var(--terracota-queimada)"
+    },
+    {
+      "nome": "Projeto Formação de Agentes Culturais",
+      "cor": "var(--marrom-terra)"
     }
   ],
   "meses": [
@@ -275,8 +279,8 @@
           "titulo": "Formação de Agentes Culturais - Xambá",
           "descricao": "Mesa mediada por Thúlio Xambá, com participação de Pai Ivo, Marileide Alves e Cannibal.",
           "topico": null,
-          "trilha": "Eventos Abertos",
-          "cor": "var(--terracota-queimada)",
+          "trilha": "Projeto Formação de Agentes Culturais",
+          "cor": "var(--marrom-terra)",
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "Thúlio Xambá, Pai Ivo, Marileide Alves e Cannibal",
@@ -286,8 +290,8 @@
         {
           "descricao": null,
           "topico": null,
-          "trilha": "Eventos Abertos",
-          "cor": "var(--terracota-queimada)",
+          "trilha": "Projeto Formação de Agentes Culturais",
+          "cor": "var(--marrom-terra)",
           "horas": 8.0,
           "local": "CACGB",
           "equipe": "Belise Alves",
