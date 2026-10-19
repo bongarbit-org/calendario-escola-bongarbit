@@ -101,14 +101,17 @@ AJUSTES = {
         "equipe": "Equipe Fab Lab Rec",
         "semAula": False,
     },
+    # A quarta 21/10 ficou livre da Trilha e ganhou a Formação de Agentes
+    # Culturais, que a planilha não traz.
     "2026-10-21": {
-        "titulo": "Não haverá aula",
-        "trilha": "Sem aula",
-        "cor": "var(--grafite-45)",
-        "horas": None,
+        "titulo": "Formação de Agentes Culturais - Xambá",
+        "descricao": "Mesa mediada por Thúlio Xambá, com participação de Pai Ivo, Marileide Alves e Cannibal.",
+        "trilha": "Eventos Abertos",
+        "cor": "var(--terracota-queimada)",
+        "horas": 3.0,
         "local": "CACGB",
-        "equipe": None,
-        "semAula": True,
+        "equipe": "Thúlio Xambá, Pai Ivo, Marileide Alves e Cannibal",
+        "semAula": False,
     },
     "2026-10-14": {"data": "2026-10-16", "diaDaSemana": "Sex", "local": "Fab Lab Rec"},
     "2026-10-28": {"data": "2026-10-30", "diaDaSemana": "Sex", "local": "Fab Lab Rec"},
@@ -134,6 +137,14 @@ ACRESCENTAR = [
         "local": "Camaragibe Velho",
         "equipe": "prof. Ninho Brown Xambá",
         "modulo": "Módulo 1",
+    },
+    {
+        "data": "2026-10-24",
+        "diaDaSemana": "Sáb",
+        "titulo": "Oficina de Produção Cultural",
+        "trilha": "Eventos Abertos",
+        "horas": 8.0,
+        "equipe": "Belise Alves",
     },
 ]
 
