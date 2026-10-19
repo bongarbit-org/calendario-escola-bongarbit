@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Aula } from "@/lib/calendario";
 import {
-  diaDataDeAula,
+  dataDeAula,
   esc,
   escolherIndice,
   escolherIndiceDiferente,
@@ -72,13 +72,13 @@ describe("saudacaoPorHora", () => {
   });
 });
 
-describe("diaDataDeAula", () => {
-  it("formata dia da semana e data sem zero à esquerda", () => {
-    expect(diaDataDeAula("2026-09-30")).toBe("quarta, 30/9");
-    expect(diaDataDeAula("2026-01-05")).toBe("segunda, 5/1");
+describe("dataDeAula", () => {
+  it("formata dia e mês sem zero à esquerda", () => {
+    expect(dataDeAula("2026-09-30")).toBe("30/9");
+    expect(dataDeAula("2026-01-05")).toBe("5/1");
   });
-  it("não erra o sábado, que não tem sufixo -feira a remover", () => {
-    expect(diaDataDeAula("2026-10-10")).toBe("sábado, 10/10");
+  it("mantém dois dígitos quando precisa", () => {
+    expect(dataDeAula("2026-10-10")).toBe("10/10");
   });
 });
 
@@ -164,19 +164,17 @@ describe("esc / negrito", () => {
 
 describe("tarjaCacgb / tarjaFablab", () => {
   it("monta a tarja cacgb em HTML, com <br> entre data e horário", () => {
-    expect(tarjaCacgb("Hoje", "quarta, 30/9", "18h às 21h")).toBe(
-      "Hoje · quarta, 30/9<br>18h às 21h",
+    expect(tarjaCacgb("Hoje", "30/9", "18h às 21h")).toBe(
+      "Hoje · 30/9<br>18h às 21h",
     );
   });
   it("monta a tarja fablab em texto puro, tudo na mesma linha", () => {
-    expect(tarjaFablab("Hoje", "quarta, 30/9", "18h às 21h")).toBe(
-      "Hoje · quarta, 30/9 · 18h às 21h",
+    expect(tarjaFablab("Hoje", "30/9", "18h às 21h")).toBe(
+      "Hoje · 30/9 · 18h às 21h",
     );
   });
   it("omite o prefixo quando vazio", () => {
-    expect(tarjaCacgb("", "quarta, 30/9", "18h às 21h")).toBe(
-      "quarta, 30/9<br>18h às 21h",
-    );
+    expect(tarjaCacgb("", "30/9", "18h às 21h")).toBe("30/9<br>18h às 21h");
   });
 });
 

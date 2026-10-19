@@ -31,21 +31,10 @@ export function saudacaoPorHora(hora: number): "Bom dia!" | "Boa tarde!" {
   return hora < 12 ? "Bom dia!" : "Boa tarde!";
 }
 
-const DIAS_SEMANA = [
-  "domingo",
-  "segunda",
-  "terça",
-  "quarta",
-  "quinta",
-  "sexta",
-  "sábado",
-];
-
-/** "2026-09-30" -> "quarta, 30/9" (sem zero à esquerda). */
-export function diaDataDeAula(data: string): string {
-  const [ano, mes, dia] = data.split("-").map(Number);
-  const diaSemana = new Date(Date.UTC(ano, mes - 1, dia)).getUTCDay();
-  return `${DIAS_SEMANA[diaSemana]}, ${dia}/${mes}`;
+/** "2026-09-30" -> "30/9" (sem zero à esquerda). */
+export function dataDeAula(data: string): string {
+  const [, mes, dia] = data.split("-").map(Number);
+  return `${dia}/${mes}`;
 }
 
 const RE_AULA_LUTERIA = /^Luteria d[oa]\s+(.+?)\s*-\s*Aula\s+(\d+)\s*$/i;

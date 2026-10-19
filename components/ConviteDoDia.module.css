@@ -152,13 +152,16 @@
   margin-top: 52px;
   background: #6b3c23;
   color: #ead6bf;
-  padding: 22px 40px;
+  padding: 26px 48px;
   font-size: 29px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-align: center;
-  line-height: 1.35;
+  line-height: 1.5;
+  /* Sem quebra: se a fonte do raster for mais larga que a do layout, o texto
+     transbordava o retângulo em vez de ele crescer junto. */
+  white-space: nowrap;
   z-index: 2;
 }
 .cacgb .msg {
@@ -199,6 +202,7 @@
   text-transform: uppercase;
   text-align: center;
   line-height: 1.4;
+  white-space: nowrap;
   z-index: 2;
 }
 .fablab .msg {

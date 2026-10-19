@@ -15,7 +15,7 @@ import { useHorarios } from "@/components/HorariosContext";
 import { BASE } from "@/lib/base";
 import type { Aula } from "@/lib/calendario";
 import {
-  diaDataDeAula,
+  dataDeAula,
   escolherIndice,
   escolherIndiceDiferente,
   linha2Variantes,
@@ -138,7 +138,7 @@ function Cartao({
   linha4: string;
 }) {
   const prefixo = "Hoje";
-  const diaData = useMemo(() => diaDataDeAula(aula.data), [aula.data]);
+  const diaData = useMemo(() => dataDeAula(aula.data), [aula.data]);
 
   return (
     <div
