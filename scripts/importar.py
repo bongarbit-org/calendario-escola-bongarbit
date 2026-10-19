@@ -307,6 +307,7 @@ def main() -> int:
             "trilhas": [{"nome": n, "cor": CORES[n]} for n, _ in TRILHAS],
             "meses": meses,
         }, f, ensure_ascii=False, indent=2)
+        f.write("\n")  # o Biome (lint do CI) exige a quebra de linha final
 
     horas = sum(i["horas"] or 0 for i in itens if not i["semAula"])
     print(f"✓ {len(itens)} entradas em {len(meses)} meses · {horas:.0f}h de formação")
