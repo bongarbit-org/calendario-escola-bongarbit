@@ -655,6 +655,11 @@ a:hover {
     gap: var(--space-2);
     margin-top: var(--space-2);
   }
+  /* "Projeto Formação de Agentes Culturais" não cabe numa linha de celular. */
+  .etiqueta {
+    white-space: normal;
+    max-width: 100%;
+  }
   .proxima {
     gap: var(--space-4);
   }
