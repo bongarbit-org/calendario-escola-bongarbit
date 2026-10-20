@@ -24,8 +24,14 @@ export type Site = { fechar: () => Promise<void> };
  * porta tem a própria pasta de saída: dois builds não se atropelam e a data de
  * cada um fica travada. `NEXT_BASE_PATH=""` tira o prefixo do GitHub Pages.
  * O horarios.json vem de public/ (gerado por `npm run horarios` antes dos testes).
+ * `calendario`, se vier, troca content/calendario.json por outro arquivo (ver
+ * next.config.mjs).
  */
-export async function subirSite(porta: number, hoje: string): Promise<Site> {
+export async function subirSite(
+  porta: number,
+  hoje: string,
+  calendario?: string,
+): Promise<Site> {
   const saida = `.e2e-${porta}`;
   const pasta = join(RAIZ, saida);
   rmSync(pasta, { recursive: true, force: true });
@@ -36,6 +42,7 @@ export async function subirSite(porta: number, hoje: string): Promise<Site> {
       NEXT_BASE_PATH: "",
       NEXT_DIST_DIR: saida,
       CALENDARIO_HOJE_TESTE: hoje,
+      ...(calendario && { CALENDARIO_JSON_TESTE: calendario }),
     },
     stdio: "ignore",
   });
