@@ -1,0 +1,126 @@
+{
+  "geradoEm": "2026-09-20T00:00:00",
+  "fonte": "e2e/fixtures/calendario-strings.json",
+  "comeca": "2026-10-01",
+  "trilhas": [
+    {
+      "nome": "Projeto Formação de Agentes Culturais e Mediadores do Patrimônio Imaterial de Pernambuco",
+      "cor": "var(--terracota-queimada)"
+    },
+    { "nome": "X", "cor": "var(--azul-caixa-dagua)" },
+    { "nome": "Trilha Empreendedora", "cor": "var(--amarelo-ocre)" },
+    { "nome": "Luteria Orgânica", "cor": "var(--verde-baoba)" }
+  ],
+  "meses": [
+    {
+      "chave": "2026-10",
+      "nome": "outubro de 2026",
+      "itens": [
+        {
+          "data": "2026-10-02",
+          "diaDaSemana": "Sex",
+          "titulo": "Formação de Agentes Culturais - Mesa de Encerramento do Primeiro Ciclo com Mestres, Mestras e Griôs da Região Metropolitana do Recife",
+          "descricao": "Mesa mediada por Thúlio Xambá, com participação de Pai Ivo, Marileide Alves, Cannibal, Mestre Galo Preto, Lia de Itamaracá, Dona Selma do Coco e convidadas e convidados de todas as nações de maracatu de baque virado e de baque solto da Zona da Mata Norte.",
+          "topico": "Patrimônio imaterial, oralidade, transmissão de saberes e a economia da cultura popular",
+          "trilha": "Projeto Formação de Agentes Culturais e Mediadores do Patrimônio Imaterial de Pernambuco",
+          "cor": "var(--terracota-queimada)",
+          "horas": 1.5,
+          "local": "Centro de Arte e Cultura Grupo Bongar — Cabaça, Rua do Pombal, Terreiro Xambá, Portão do Gelo, Olinda",
+          "equipe": "prof. Ninho Brown Xambá, prof.ª Maria Eduarda Albuquerque de Vasconcelos e equipe de produção e monitoria do Bongarbit",
+          "modulo": "Módulo 1",
+          "semAula": false
+        },
+        {
+          "data": "2026-10-05",
+          "diaDaSemana": "Seg",
+          "titulo": "A",
+          "descricao": null,
+          "topico": null,
+          "trilha": "X",
+          "cor": "var(--azul-caixa-dagua)",
+          "horas": 1,
+          "local": "B",
+          "equipe": "C",
+          "modulo": null,
+          "semAula": false
+        },
+        {
+          "data": "2026-10-07",
+          "diaDaSemana": "Qua",
+          "titulo": "Oficina de Pneumoultramicroscopicossilicovulcanoconiótico_e_outras_palavras_sem_espaço_nenhum",
+          "descricao": "https://exemplo.org/um/endereco/muito/longo/sem/espacos/que/nao/tem/onde/quebrar/naturalmente?com=parametros&e=mais",
+          "topico": null,
+          "trilha": "Luteria Orgânica",
+          "cor": "var(--verde-baoba)",
+          "horas": 3,
+          "local": "Laboratório_de_Fabricação_Digital_do_Recife_FabLabRec_Bairro_do_Recife",
+          "equipe": "prof. Bolinho",
+          "modulo": "Módulo 2",
+          "semAula": false
+        },
+        {
+          "data": "2026-10-10",
+          "diaDaSemana": "Sáb",
+          "titulo": "Café com Bongarbit ☕ — São João, Ação & Coração: “aspas”, ‘apóstrofos’ e çãõéíú",
+          "descricao": "Curto.",
+          "topico": "Ç",
+          "trilha": "Trilha Empreendedora",
+          "cor": "var(--amarelo-ocre)",
+          "horas": 12.25,
+          "local": "Aldeia Povo Marikito, em Escada",
+          "equipe": null,
+          "modulo": null,
+          "semAula": false
+        },
+        {
+          "data": "2026-10-12",
+          "diaDaSemana": "Seg",
+          "titulo": "Feriado de Nossa Senhora Aparecida, Padroeira do Brasil, e Dia das Crianças — sem aula em nenhuma das sedes",
+          "descricao": null,
+          "topico": null,
+          "trilha": "Feriado",
+          "cor": "var(--papel-sombra)",
+          "horas": null,
+          "local": null,
+          "equipe": null,
+          "modulo": null,
+          "semAula": true
+        },
+        {
+          "data": "2026-10-14",
+          "diaDaSemana": "Qua",
+          "titulo": "Sem dado nenhum além do título",
+          "descricao": null,
+          "topico": null,
+          "trilha": "Luteria Orgânica",
+          "cor": "var(--verde-baoba)",
+          "horas": null,
+          "local": null,
+          "equipe": null,
+          "modulo": null,
+          "semAula": false
+        }
+      ]
+    },
+    {
+      "chave": "2026-11",
+      "nome": "novembro de 2026",
+      "itens": [
+        {
+          "data": "2026-11-04",
+          "diaDaSemana": "Qua",
+          "titulo": "Luteria do Tambor Falante (Tama) - Aula 2",
+          "descricao": null,
+          "topico": null,
+          "trilha": "Projeto Formação de Agentes Culturais e Mediadores do Patrimônio Imaterial de Pernambuco",
+          "cor": "var(--terracota-queimada)",
+          "horas": 3,
+          "local": "CACGB",
+          "equipe": "prof. Bolinho",
+          "modulo": "Módulo 1",
+          "semAula": false
+        }
+      ]
+    }
+  ]
+}

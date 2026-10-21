@@ -5,6 +5,10 @@
 const base =
   process.env.NEXT_BASE_PATH ??
   (process.env.NODE_ENV === "production" ? "/calendario-escola-bongarbit" : "");
+// Só nos testes e2e (e2e/strings.e2e.test.ts): troca content/calendario.json por
+// um calendário de mentira, com strings de todos os tamanhos. O JSON entra no
+// bundle do cliente também, então a troca tem que ser no build.
+const calendarioDeTeste = process.env.CALENDARIO_JSON_TESTE;
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
@@ -14,5 +18,10 @@ const nextConfig = {
   ...(base && { basePath: base }),
   ...(process.env.NEXT_DIST_DIR && { distDir: process.env.NEXT_DIST_DIR }),
   env: { NEXT_PUBLIC_BASE_PATH: base },
+  ...(calendarioDeTeste && {
+    turbopack: {
+      resolveAlias: { "@/content/calendario.json": calendarioDeTeste },
+    },
+  }),
 };
 export default nextConfig;

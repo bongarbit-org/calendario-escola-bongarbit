@@ -46,13 +46,23 @@ export function DetalheProxima({ aula }: { aula: Aula }) {
 
   return (
     <p className="aula__detalhe" style={{ marginTop: "var(--space-3)" }}>
-      {partes.map((parte, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: ordem é fixa (trilha, carga, horário, local), lista só cresce/encolhe, nunca reordena.
-        <span key={i}>
-          {i > 0 && " · "}
-          {parte}
-        </span>
-      ))}
+      {partes.map((parte, i) => {
+        const ultima = i === partes.length - 1;
+        // A linha quebra entre as peças, depois do "·" — nunca no meio de
+        // "18h às 21h", e o "·" nunca fica sozinho numa linha (espaço não
+        // separável). A trilha, a primeira, corre como texto comum: nome longo
+        // quebra entre palavras e deixa o resto seguir na mesma linha.
+        return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: ordem é fixa (trilha, carga, horário, local), lista só cresce/encolhe, nunca reordena.
+          <span key={i}>
+            <span className={i > 0 ? "aula__detalhe-peca" : undefined}>
+              {parte}
+              {!ultima && "\u00a0·"}
+            </span>
+            {!ultima && " "}
+          </span>
+        );
+      })}
     </p>
   );
 }

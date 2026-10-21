@@ -134,6 +134,9 @@ body {
   line-height: var(--lh-body);
   letter-spacing: var(--ls-body);
   -webkit-font-smoothing: antialiased;
+  /* Palavra sem espaço (URL, nome_com_sublinhado) quebra onde for preciso em vez
+     de empurrar o cartão para fora da tela. */
+  overflow-wrap: anywhere;
 }
 
 /* Grão de papel: ruído SVG leve, sem imagem pesada. */
@@ -437,6 +440,7 @@ a:hover {
   align-items: flex-end;
   gap: 4px;
   text-align: right;
+  max-width: 18rem;
 }
 .etiqueta {
   display: inline-block;
@@ -448,7 +452,7 @@ a:hover {
   border: var(--rule-hair) solid var(--border-rule);
   border-radius: var(--radius-none);
   color: var(--papel);
-  white-space: nowrap;
+  max-width: 100%;
   line-height: 1.4;
 }
 .etiqueta--sem-aula {
@@ -459,7 +463,12 @@ a:hover {
 .aula__detalhe {
   font-size: var(--fs-caption);
   color: var(--text-muted);
-  white-space: nowrap;
+}
+/* Cada peça da linha do Próximo encontro desce inteira para a linha de baixo;
+   só quebra por dentro se sozinha já for mais larga que o cartão. */
+.aula__detalhe-peca {
+  display: inline-block;
+  max-width: 100%;
 }
 .aula__detalhe--carregando {
   font-size: var(--fs-caption);
@@ -654,11 +663,6 @@ a:hover {
     flex-wrap: wrap;
     gap: var(--space-2);
     margin-top: var(--space-2);
-  }
-  /* "Projeto Formação de Agentes Culturais" não cabe numa linha de celular. */
-  .etiqueta {
-    white-space: normal;
-    max-width: 100%;
   }
   .proxima {
     gap: var(--space-4);
