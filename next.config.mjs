@@ -17,7 +17,12 @@ const nextConfig = {
   images: { unoptimized: true },
   ...(base && { basePath: base }),
   ...(process.env.NEXT_DIST_DIR && { distDir: process.env.NEXT_DIST_DIR }),
-  env: { NEXT_PUBLIC_BASE_PATH: base },
+  // CALENDARIO_HOJE_TESTE (só nos e2e) entra no bundle do cliente para que o
+  // "hoje" recalculado no navegador também fique travado na data do teste.
+  env: {
+    NEXT_PUBLIC_BASE_PATH: base,
+    CALENDARIO_HOJE_TESTE: process.env.CALENDARIO_HOJE_TESTE ?? "",
+  },
   ...(calendarioDeTeste && {
     turbopack: {
       resolveAlias: { "@/content/calendario.json": calendarioDeTeste },

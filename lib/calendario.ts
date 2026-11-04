@@ -28,10 +28,14 @@ export const todasAsAulas = (): Aula[] =>
 
 const FUSO = "America/Recife";
 
-/** Hoje no fuso de Recife — o build (GitHub Actions) roda em UTC. */
+/**
+ * Hoje no fuso de Recife, qualquer que seja o fuso de quem roda: o build
+ * (GitHub Actions, em UTC) e o navegador de quem abre a página.
+ */
 export function hoje(): string {
   // Só para os testes e2e: sem isto, "hoje" muda todo dia e o teste não tem como
-  // escolher uma data previsível. Nunca é lido a partir de requisição do navegador.
+  // escolher uma data previsível. Fixado no build (next.config.mjs), vale também
+  // no navegador.
   if (process.env.CALENDARIO_HOJE_TESTE)
     return process.env.CALENDARIO_HOJE_TESTE;
   const p = new Intl.DateTimeFormat("pt-BR", {
@@ -66,8 +70,7 @@ export const mesCurto = (data: string) =>
   MESES_CURTOS[Number(data.slice(5, 7)) - 1];
 
 /** A próxima atividade a partir de hoje, ignorando os dias sem aula. */
-export function proximaAula(): Aula | undefined {
-  const h = hoje();
+export function proximaAula(h: string = hoje()): Aula | undefined {
   return todasAsAulas().find((a) => a.data >= h && !a.semAula);
 }
 

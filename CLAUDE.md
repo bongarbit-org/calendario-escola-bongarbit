@@ -26,7 +26,8 @@ python3 -c "import googleapiclient, openpyxl"   # confirma que as libs Python es
 gera o site estático, serve-o e dirige um Chromium headless real via Puppeteer —
 é o único jeito de testar coisas que dependem de um browser de verdade, como a
 rasterização de imagem do `@zumer/snapdom` (`e2e/*.e2e.test.ts`). Como "hoje"
-é fixado no build (`CALENDARIO_HOJE_TESTE`), [`e2e/site-estatico.ts`](e2e/site-estatico.ts)
+é fixado no build (`CALENDARIO_HOJE_TESTE`, que entra também no bundle do
+navegador), [`e2e/site-estatico.ts`](e2e/site-estatico.ts)
 faz um build por data, cada um na própria pasta `.e2e-<porta>/` (apagada ao
 fim), e o serve na raiz de uma porta — nunca `next dev`, que recusa duas
 instâncias no mesmo projeto.
@@ -104,8 +105,8 @@ volta nem alimenta o JSON — é exibição, não sincronização.
 
 Next.js (App Router), sempre **estático** (`output: "export"`): o build gera
 `out/`, que o GitHub Pages serve (ver "Publicação" abaixo). Não há servidor nem
-rota de API. "Hoje" é o do momento do build; só no `npm run dev` ele é
-recalculado a cada requisição.
+rota de API. "Hoje" é recalculado no navegador (ver `Encontros` abaixo); o build
+só fixa o primeiro HTML.
 
 - [`lib/calendario.ts`](lib/calendario.ts) importa `content/calendario.json`
   direto (não via `fetch`) e expõe os tipos (`Aula`, `Mes`) e as funções
@@ -122,19 +123,23 @@ recalculado a cada requisição.
   passadas. A grade de mês é montada à mão (função `grade()`) a partir do
   primeiro domingo ao último sábado.
 
-Cinco componentes são client (`"use client"`), e todos pelo mesmo motivo —
+Seis componentes são client (`"use client"`), e todos pelo mesmo motivo —
 dependem de estado, de evento ou do navegador:
 
 | Componente | Para quê |
 |---|---|
+| `Encontros` | "hoje" no navegador: destaque do próximo encontro, calendário e rodapé |
 | `Calendario` | filtro, vista lista/grade, dia aberto |
 | `HorariosContext` | busca `horarios.json` depois do primeiro HTML e distribui o resultado |
 | `IndicadorHorario` | mostra o horário real ao lado da carga horária, ou o estado de carga/erro |
 | `DetalheProxima` | o mesmo, no destaque do próximo encontro |
 | `ConviteDoDia` | o convite de aula: modal, sorteio das frases e rasterização via `@zumer/snapdom` |
 
-O resto é server component. Em particular `hoje()` só roda no build, o que
-mantém a data vinda do fuso de Recife e não do relógio de quem abre a página.
+O resto é server component. `hoje()` devolve a data no fuso de Recife onde quer
+que rode. `Encontros` faz o primeiro render com o "hoje" do build (para a
+hidratação bater), troca logo depois pelo do navegador e confere a cada minuto
+— o site não fica preso ao último build, cujo agendamento atrasa horas ou é
+pulado pelo GitHub.
 
 ### Publicação: GitHub Pages
 
@@ -146,7 +151,8 @@ O site é publicado como página estática em
 gera o `horarios.json`; o `basePath` `/calendario-escola-bongarbit` vem de
 `next.config.mjs` (só em produção; no `dev` é vazio).
 
-Consequências: "hoje" e o horário só mudam na próxima reconstrução; caminhos de
+Consequências: o horário real (`horarios.json`) só muda na próxima
+reconstrução — "hoje" não, é do navegador; caminhos de
 `public/` precisam do prefixo `BASE` de [`lib/base.ts`](lib/base.ts) (as fontes
 usam `url("../public/fonts/…")` no CSS por isso). Para ver o build como o Pages
 o serve, abra `out/` sob o prefixo — ou, mais simples, confie no e2e, que o

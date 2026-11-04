@@ -19,8 +19,9 @@ const TIPOS: Record<string, string> = {
 export type Site = { fechar: () => Promise<void> };
 
 /**
- * Gera o site estático com "hoje" fixado em `hoje` (CALENDARIO_HOJE_TESTE é lido
- * no build, quando a página é renderizada) e o serve na raiz de `porta`. Cada
+ * Gera o site estático com "hoje" fixado em `hoje` (CALENDARIO_HOJE_TESTE, lido
+ * no build e embutido no bundle, trava a data também no navegador) e o serve na
+ * raiz de `porta`. Com `hoje` nulo, vale a data real, no build e no navegador. Cada
  * porta tem a própria pasta de saída: dois builds não se atropelam e a data de
  * cada um fica travada. `NEXT_BASE_PATH=""` tira o prefixo do GitHub Pages.
  * O horarios.json vem de public/ (gerado por `npm run horarios` antes dos testes).
@@ -29,7 +30,7 @@ export type Site = { fechar: () => Promise<void> };
  */
 export async function subirSite(
   porta: number,
-  hoje: string,
+  hoje: string | null,
   calendario?: string,
 ): Promise<Site> {
   const saida = `.e2e-${porta}`;
@@ -41,7 +42,7 @@ export async function subirSite(
       ...process.env,
       NEXT_BASE_PATH: "",
       NEXT_DIST_DIR: saida,
-      CALENDARIO_HOJE_TESTE: hoje,
+      ...(hoje && { CALENDARIO_HOJE_TESTE: hoje }),
       ...(calendario && { CALENDARIO_JSON_TESTE: calendario }),
     },
     stdio: "ignore",
