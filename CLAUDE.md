@@ -59,8 +59,12 @@ outubro?"): responder a partir de uma cópia velha é pior que não responder.
 - **Simples.** Uma linha de assunto no imperativo, em português, dizendo o que
   mudou. Corpo só quando a razão não couber no assunto — e aí, duas ou três
   linhas.
-- Commite quando o usuário pedir. Faça `push` em seguida, já que outras pessoas
-  têm acesso ao repositório.
+- Commite quando o usuário pedir. **O `push` exige confirmação à parte**: depois
+  do commit, pergunte antes de enviar — "commita" não autoriza o `push`, já que
+  ele publica o site e outras pessoas têm acesso ao repositório.
+- **Nunca dispare uma GitHub Action sem confirmar antes** (`gh workflow run`,
+  re-run, cancelamento). Acompanhar uma execução (`gh run list`, `gh run
+  watch`) pode; iniciá-la não.
 - O `origin` é `github.com/bongarbit-org/calendario-escola-bongarbit` (público),
   não mais `bongarbit/…`. Cada `push` no `main` já publica o site (ver §4).
 
@@ -146,9 +150,9 @@ pulado pelo GitHub.
 O site é publicado como página estática em
 `https://bongarbit-org.github.io/calendario-escola-bongarbit/`, por
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml): a cada `push` no
-`main`, manualmente (`gh workflow run pages.yml`) e às 00h30, 06h30, 12h30 e
-18h30 de Recife. O workflow só instala e roda `npm run build`, cujo `prebuild`
-gera o `horarios.json`; o `basePath` `/calendario-escola-bongarbit` vem de
+`main`, manualmente (`gh workflow run pages.yml`, só com o aval do usuário — ver
+§2) e às 00h30, 06h30, 12h30 e 18h30 de Recife. O workflow só instala e roda
+`npm run build`, cujo `prebuild` gera o `horarios.json`; o `basePath` `/calendario-escola-bongarbit` vem de
 `next.config.mjs` (só em produção; no `dev` é vazio).
 
 Consequências: o horário real (`horarios.json`) só muda na próxima
@@ -289,7 +293,7 @@ concluir que algo falhou: `python3 -c "import googleapiclient, openpyxl"`.
 2. Editar a constante em `scripts/importar.py` **e** o `content/calendario.json`
 3. `npm run build`
 4. Conferir o resultado no HTML servido, não só no JSON
-5. Commit simples e `git push`
+5. Commit simples; `git push` só depois de confirmar com o usuário (ver §2)
 6. O `push` já dispara o GitHub Pages: acompanhe com
    `gh run watch <id> -R bongarbit-org/calendario-escola-bongarbit` (o id sai de
    `gh run list -w pages.yml`)
