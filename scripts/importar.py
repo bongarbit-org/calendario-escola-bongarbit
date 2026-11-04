@@ -70,6 +70,34 @@ LOCAIS = {
     # em AJUSTES, e não por trilha.
 }
 
+# Aula a aula da Luteria Digital, da aba "Planejamento Luteria Digital" (colunas
+# Planejamento e Professor), casada pela data. Vale mais que a coluna genérica
+# de equipe e que o tópico lido da aba. Some quando a planilha for reimportada
+# com a aba atualizada e PROFESSORES passar a ler dela.
+LUTERIA_DIGITAL = {
+    "2026-11-04": ("Aula Introdutória dos Instrumentos do Bongarbit", "prof. João Tragtenberg"),
+    "2026-11-09": ("Monturo Eletrônico", "prof. João Tragtenberg"),
+    "2026-11-11": ("A solda e o cabo de áudio", "prof. João Tragtenberg"),
+    "2026-11-16": ("Estrutura do Botões Falantes", "prof. Thúlio Xambá"),
+    "2026-11-18": (None, "prof. João Tragtenberg"),
+    "2026-11-23": ("Eletrônica e Programação dos Botões Falantes", "prof. João Tragtenberg"),
+    "2026-11-25": ("Gravação e edição de samples - Audacity", "prof. João Tragtenberg"),
+    "2026-11-30": ("Eletrônica e Programação dos Botões Falantes", "prof. Ninho Brown Xambá"),
+    "2026-12-02": ("Estrutura do Agbau", "prof. Ninho Brown Xambá"),
+    "2026-12-07": ("Estrutura do Agbau", "prof. João Tragtenberg"),
+    "2026-12-09": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
+    "2026-12-14": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
+    "2026-12-16": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
+    "2027-01-11": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
+    "2027-01-13": ("Estrutura do Engome Adubado", "prof. Thúlio Xambá"),
+    "2027-01-18": ("Estrutura do Engome Adubado", "prof. Thúlio Xambá"),
+    "2027-01-20": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
+    "2027-01-25": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
+    "2027-01-27": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
+    "2027-02-15": ("Encerramento do Módulo de Luteria Digital", "prof. João Tragtenberg"),
+    "2027-02-17": ("Preparação do Show de Culminância", "prof. Thúlio Xambá"),
+}
+
 # Ajustes pontuais confirmados pela coordenação e ainda não refletidos na
 # planilha, casados pela data. Cada linha some quando a planilha for corrigida.
 AJUSTES = {
@@ -284,6 +312,9 @@ def main() -> int:
 
     for i in itens:
         i.update(AJUSTES.get(i["data"], {}))
+        if i["data"] in LUTERIA_DIGITAL and i["trilha"] == "Luteria Digital":
+            i["topico"], i["equipe"] = LUTERIA_DIGITAL[i["data"]]
+            i["modulo"] = i["modulo"] or "Módulo 2"
     itens += [acrescentada(b) for b in ACRESCENTAR]
     ocupadas = {i["data"] for i in itens}
     itens += [feriado(d, n) for d, n in FERIADOS.items()

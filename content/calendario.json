@@ -373,7 +373,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -401,7 +401,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -410,12 +410,12 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Estrutura do Botões Falantes",
+          "topico": "A solda e o cabo de áudio",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -429,7 +429,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Thúlio Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -438,12 +438,12 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Eletrônica e Programação dos Botões Falantes",
+          "topico": null,
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -457,7 +457,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -466,12 +466,12 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Eletrônica e Programação dos Botões Falantes",
+          "topico": "Gravação e edição de samples - Audacity",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -480,12 +480,12 @@
           "diaDaSemana": "Seg",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Estrutura do Agbau",
+          "topico": "Eletrônica e Programação dos Botões Falantes",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Ninho Brown Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         }
@@ -505,7 +505,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Ninho Brown Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -533,7 +533,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -547,7 +547,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -561,7 +561,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -570,13 +570,13 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": null,
+          "topico": "Eletrônica e Programação do Agbau",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
-          "modulo": null,
+          "equipe": "prof. João Tragtenberg",
+          "modulo": "Módulo 2",
           "semAula": false
         },
         {
@@ -623,7 +623,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -637,7 +637,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Thúlio Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -651,7 +651,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Thúlio Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -665,7 +665,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -679,7 +679,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -693,7 +693,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         }
@@ -811,7 +811,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -825,7 +825,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Rafael, Thúlio Xambá e João Tragtenberg",
+          "equipe": "prof. Thúlio Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
