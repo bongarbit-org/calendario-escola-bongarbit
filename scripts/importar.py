@@ -70,33 +70,27 @@ LOCAIS = {
     # em AJUSTES, e não por trilha.
 }
 
-# Aula a aula da Luteria Digital, da aba "Planejamento Luteria Digital" (colunas
-# Planejamento e Professor), casada pela data. Vale mais que a coluna genérica
-# de equipe e que o tópico lido da aba. Some quando a planilha for reimportada
-# com a aba atualizada e PROFESSORES passar a ler dela.
-LUTERIA_DIGITAL = {
-    "2026-11-04": ("Aula Introdutória dos Instrumentos do Bongarbit", "prof. João Tragtenberg"),
-    "2026-11-09": ("Monturo Eletrônico", "prof. João Tragtenberg"),
-    "2026-11-11": ("A solda e o cabo de áudio", "prof. João Tragtenberg"),
-    "2026-11-16": ("Estrutura do Botões Falantes", "prof. Thúlio Xambá"),
-    "2026-11-18": (None, "prof. João Tragtenberg"),
-    "2026-11-23": ("Eletrônica e Programação dos Botões Falantes", "prof. João Tragtenberg"),
-    "2026-11-25": ("Gravação e edição de samples - Audacity", "prof. João Tragtenberg"),
-    "2026-11-30": ("Eletrônica e Programação dos Botões Falantes", "prof. Ninho Brown Xambá"),
-    "2026-12-02": ("Estrutura do Agbau", "prof. Ninho Brown Xambá"),
-    "2026-12-07": ("Estrutura do Agbau", "prof. João Tragtenberg"),
-    "2026-12-09": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
-    "2026-12-14": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
-    "2026-12-16": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
-    "2027-01-11": ("Eletrônica e Programação do Agbau", "prof. João Tragtenberg"),
-    "2027-01-13": ("Estrutura do Engome Adubado", "prof. Thúlio Xambá"),
-    "2027-01-18": ("Estrutura do Engome Adubado", "prof. Thúlio Xambá"),
-    "2027-01-20": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
-    "2027-01-25": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
-    "2027-01-27": ("Eletrônica e Programação do Engome Adubado", "prof. João Tragtenberg"),
-    "2027-02-15": ("Encerramento do Módulo de Luteria Digital", "prof. João Tragtenberg"),
-    "2027-02-17": ("Preparação do Show de Culminância", "prof. Thúlio Xambá"),
-}
+# Quem dá a aula de Luteria Digital vem da coluna "PROFESSOR" da aba
+# "Planejamento Luteria Digital", casada pela data, e vale mais que PROFESSORES.
+# A célula junta os nomes só com espaço ("João Tragtenberg Thúlio Xambá e Ninho
+# Brown Xambá"), então os nomes são reconhecidos por esta lista. Texto que a
+# lista não cobre inteiro entra como está, para nunca perder um nome.
+NOMES_PROFESSORES = ("João Tragtenberg", "Thúlio Xambá", "Ninho Brown Xambá")
+
+
+def professores_da_aba(celula) -> str | None:
+    """'João Tragtenberg Thúlio Xambá e X' → 'prof. João Tragtenberg, Thúlio Xambá e X'."""
+    if not celula:
+        return None
+    texto = re.sub(r"\s+", " ", str(celula)).strip()
+    achados = sorted((texto.find(n), n) for n in NOMES_PROFESSORES if n in texto)
+    resto = texto
+    for _, nome in achados:
+        resto = resto.replace(nome, "")
+    if not achados or re.sub(r"[\s,]|\be\b", "", resto):
+        return f"prof. {texto}"
+    nomes = [n for _, n in achados]
+    return "prof. " + (", ".join(nomes[:-1]) + " e " + nomes[-1] if len(nomes) > 1 else nomes[0])
 
 # Ajustes pontuais confirmados pela coordenação e ainda não refletidos na
 # planilha, casados pela data. Cada linha some quando a planilha for corrigida.
@@ -271,12 +265,18 @@ def main() -> int:
         return 1
     wb = openpyxl.load_workbook(sys.argv[1], data_only=True)
 
-    # tópico de cada aula de Luteria Digital, que mora em aba separada
+    # tópico e professor de cada aula de Luteria Digital, que moram em aba separada
     topicos: dict[str, str] = {}
+    professores: dict[str, str] = {}
     if "Planejamento Luteria Digital" in wb.sheetnames:
         for r in wb["Planejamento Luteria Digital"].iter_rows(min_row=3, values_only=True):
-            if isinstance(r[2], datetime.datetime) and r[7]:
-                topicos[r[2].date().isoformat()] = re.sub(r"\s+", " ", str(r[7])).strip()
+            if not isinstance(r[2], datetime.datetime):
+                continue
+            dia = r[2].date().isoformat()
+            if r[7]:
+                topicos[dia] = re.sub(r"\s+", " ", str(r[7])).strip()
+            if prof := professores_da_aba(r[12]):
+                professores[dia] = prof
 
     itens, excluidos = [], []
     for r in wb["Cronograma detalhado"].iter_rows(min_row=3, values_only=True):
@@ -312,8 +312,8 @@ def main() -> int:
 
     for i in itens:
         i.update(AJUSTES.get(i["data"], {}))
-        if i["data"] in LUTERIA_DIGITAL and i["trilha"] == "Luteria Digital":
-            i["topico"], i["equipe"] = LUTERIA_DIGITAL[i["data"]]
+        if i["data"] in professores and i["trilha"] == "Luteria Digital":
+            i["equipe"] = professores[i["data"]]
             i["modulo"] = i["modulo"] or "Módulo 2"
     itens += [acrescentada(b) for b in ACRESCENTAR]
     ocupadas = {i["data"] for i in itens}

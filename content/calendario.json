@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-09-20T13:56:11",
+  "geradoEm": "2026-11-19T05:25:04",
   "fonte": "cronograma.xlsx",
   "comeca": "2026-09-01",
   "trilhas": [
@@ -96,7 +96,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Bolinho",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -110,7 +110,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Bolinho",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -124,7 +124,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Ninho Brown Xambá",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -138,7 +138,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Ninho Brown Xambá",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -152,7 +152,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Ninho Brown Xambá",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         }
       ]
@@ -186,7 +186,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "prof. Ninho Brown Xambá",
-          "modulo": "Módulo 2",
+          "modulo": null,
           "semAula": false
         },
         {
@@ -200,7 +200,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "Equipe Fab Lab Rec",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -232,9 +232,6 @@
           "semAula": true
         },
         {
-          "data": "2026-10-14",
-          "diaDaSemana": "Qua",
-          "titulo": "Não haverá aula",
           "descricao": null,
           "topico": null,
           "trilha": "Sem aula",
@@ -243,7 +240,10 @@
           "local": "CACGB",
           "equipe": null,
           "modulo": "Módulo 2",
-          "semAula": true
+          "semAula": true,
+          "titulo": "Não haverá aula",
+          "data": "2026-10-14",
+          "diaDaSemana": "Qua"
         },
         {
           "data": "2026-10-16",
@@ -256,7 +256,7 @@
           "horas": 3.0,
           "local": "Fab Lab Rec",
           "equipe": "Equipe Fab Lab Rec",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -270,7 +270,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "Equipe Fab Lab Rec",
-          "modulo": "Módulo 2",
+          "modulo": null,
           "semAula": false
         },
         {
@@ -284,7 +284,7 @@
           "horas": 3.0,
           "local": "CACGB",
           "equipe": "Thúlio Xambá, Pai Ivo, Marileide Alves e Cannibal",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         },
         {
@@ -310,15 +310,12 @@
           "trilha": "Sem aula",
           "cor": "var(--grafite-45)",
           "horas": null,
-          "local": "CACGB",
-          "equipe": "João, Thúlio, Educadores e Monitores",
-          "modulo": "Módulo 2",
+          "local": null,
+          "equipe": null,
+          "modulo": null,
           "semAula": true
         },
         {
-          "data": "2026-10-28",
-          "diaDaSemana": "Qua",
-          "titulo": "Não haverá aula",
           "descricao": null,
           "topico": null,
           "trilha": "Sem aula",
@@ -327,7 +324,10 @@
           "local": "CACGB",
           "equipe": null,
           "modulo": "Módulo 2",
-          "semAula": true
+          "semAula": true,
+          "titulo": "Não haverá aula",
+          "data": "2026-10-28",
+          "diaDaSemana": "Qua"
         },
         {
           "data": "2026-10-30",
@@ -340,7 +340,7 @@
           "horas": 3.0,
           "local": "Fab Lab Rec",
           "equipe": "Equipe Fab Lab Rec",
-          "modulo": "Módulo 2",
+          "modulo": "Módulo 1",
           "semAula": false
         }
       ]
@@ -373,7 +373,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. João Tragtenberg",
+          "equipe": "prof. João Tragtenberg, Thúlio Xambá e Ninho Brown Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -438,12 +438,12 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": null,
+          "topico": "Estrutura do Botões Falantes",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. João Tragtenberg",
+          "equipe": "prof. Thúlio Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -466,7 +466,7 @@
           "diaDaSemana": "Qua",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Gravação e edição de samples - Audacity",
+          "topico": "Eletrônica e Programação dos Botões Falantes",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
@@ -480,12 +480,12 @@
           "diaDaSemana": "Seg",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Eletrônica e Programação dos Botões Falantes",
+          "topico": "Gravação e edição de samples",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Ninho Brown Xambá",
+          "equipe": "prof. João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         }
@@ -533,7 +533,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. João Tragtenberg",
+          "equipe": "prof. Ninho Brown Xambá",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -637,7 +637,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Thúlio Xambá",
+          "equipe": "prof. Thúlio Xambá e João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -651,7 +651,7 @@
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
           "local": "CACGB",
-          "equipe": "prof. Thúlio Xambá",
+          "equipe": "prof. Thúlio Xambá e João Tragtenberg",
           "modulo": "Módulo 2",
           "semAula": false
         },
@@ -839,7 +839,7 @@
           "cor": "var(--terracota-queimada)",
           "horas": 10.0,
           "local": "CACGB - Cabaça",
-          "equipe": "João, Thúlio, Renata, Letícia e Monitores",
+          "equipe": null,
           "modulo": "Encerramento da Execução do Projeto",
           "semAula": false
         }
