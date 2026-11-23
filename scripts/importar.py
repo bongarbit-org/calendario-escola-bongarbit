@@ -95,6 +95,9 @@ def professores_da_aba(celula) -> str | None:
 # Ajustes pontuais confirmados pela coordenação e ainda não refletidos na
 # planilha, casados pela data. Cada linha some quando a planilha for corrigida.
 AJUSTES = {
+    # A aula de 23/11 passou a fechar a estrutura dos Botões Falantes. O professor
+    # já vem certo da aba (João); falta só o tópico lá.
+    "2026-11-23": {"topico": "Finalizar a estrutura do Botões Falantes"},
     # O Café de novembro saiu do Recife e perdeu o subtítulo.
     "2026-11-07": {
         "titulo": "Café com Bongarbit (5)",

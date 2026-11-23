@@ -96,6 +96,7 @@ CAMPOS = {
     "Fase/etapa": "modulo",
     "Local": "local",
     "Participantes/equipe": "equipe",
+    "Planejamento": "topico",
     # O site não tem mais "objetivo": a linha continua listada para que o
     # sincronizador a encontre e a apague dos eventos que ainda a carregam.
     "Etapa/resultado": "objetivo",

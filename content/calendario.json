@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-11-19T05:25:04",
+  "geradoEm": "2026-11-23T10:12:05",
   "fonte": "cronograma.xlsx",
   "comeca": "2026-09-01",
   "trilhas": [
@@ -452,7 +452,7 @@
           "diaDaSemana": "Seg",
           "titulo": "Luteria Digital",
           "descricao": null,
-          "topico": "Eletrônica e Programação dos Botões Falantes",
+          "topico": "Finalizar a estrutura do Botões Falantes",
           "trilha": "Luteria Digital",
           "cor": "var(--azul-caixa-dagua)",
           "horas": 3.0,
